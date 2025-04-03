@@ -22,48 +22,10 @@
     <sonar.organization>muhammad-owais-29</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar-maven-plugin-version>3.8.0.2131</sonar-maven-plugin-version>
-    
-    <!-- Encoding and Compiler Properties -->
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-
-    <!-- For each rule to be ignored, add another eXX and two corresponding
-    properties with eXX in the name as below -->
-    <sonar.issue.ignore.multicriteria>e11,e12,e13,e14</sonar.issue.ignore.multicriteria>
-
-    <!-- Disable rule for "Inheritance tree of classes should not be too
-        deep" -->
-        <sonar.issue.ignore.multicriteria.e11.ruleKey>
-            squid:MaximumInheritanceDepth
-        </sonar.issue.ignore.multicriteria.e11.ruleKey>
-        <sonar.issue.ignore.multicriteria.e11.resourceKey>
-            **/*.java
-        </sonar.issue.ignore.multicriteria.e11.resourceKey>
-
-        <!-- Disable rule for "Local variable and method parameter names should
-        comply with a naming convention" -->
-        <sonar.issue.ignore.multicriteria.e12.ruleKey>
-            java:S117
-        </sonar.issue.ignore.multicriteria.e12.ruleKey>
-        <sonar.issue.ignore.multicriteria.e12.resourceKey>
-            **/*CombinedSwingView.java
-        </sonar.issue.ignore.multicriteria.e12.resourceKey>
-
-        
-        <!-- Disable rule for "Use static access with
-        "javax.swing.WindowConstants" -->
-        <sonar.issue.ignore.multicriteria.e14.ruleKey>
-            java:S3252
-        </sonar.issue.ignore.multicriteria.e14.ruleKey>
-        <sonar.issue.ignore.multicriteria.e14.resourceKey>
-            **/*CombinedSwingView.java
-        </sonar.issue.ignore.multicriteria.e14.resourceKey>
-
-        <sonar.coverage.exclusions>
+    <sonar.coverage.exclusions>
             **/entity/*.*,
             **/LibrarySwingApp.*
-        </sonar.coverage.exclusions>
+    </sonar.coverage.exclusions>
   </properties>
 
   <dependencies>
