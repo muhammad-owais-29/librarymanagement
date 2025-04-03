@@ -19,6 +19,60 @@
     <maven.compiler.target>8</maven.compiler.target>
     <mockito.version>4.4.0</mockito.version>
     <junit.version>4.13</junit.version>
+    <sonar.organization>muhammad-owais-29</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <sonar-maven-plugin-version>3.8.0.2131</sonar-maven-plugin-version>
+    
+    <!-- Encoding and Compiler Properties -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+
+    <!-- For each rule to be ignored, add another eXX and two corresponding
+    properties with eXX in the name as below -->
+    <sonar.issue.ignore.multicriteria>e11,e12,e13,e14</sonar.issue.ignore.multicriteria>
+
+    <!-- Disable rule for "Inheritance tree of classes should not be too
+    deep" -->
+    <sonar.issue.ignore.multicriteria.e11.ruleKey>
+        squid:MaximumInheritanceDepth
+    </sonar.issue.ignore.multicriteria.e11.ruleKey>
+    <sonar.issue.ignore.multicriteria.e11.resourceKey>
+        **/*.java
+    </sonar.issue.ignore.multicriteria.e11.resourceKey>
+
+    <!-- Disable rule for "Local variable and method parameter names should
+    comply with a naming convention" -->
+    <sonar.issue.ignore.multicriteria.e12.ruleKey>
+            java:S117
+    </sonar.issue.ignore.multicriteria.e12.ruleKey>
+    <sonar.issue.ignore.multicriteria.e12.resourceKey>
+        **/*SwingView.java
+    </sonar.issue.ignore.multicriteria.e12.resourceKey>
+
+    <!-- Disable rule for "Tests should include assertions": SonarQube is
+    not aware of AssertJ Swing -->
+    <sonar.issue.ignore.multicriteria.e13.ruleKey>
+        java:S2699
+    </sonar.issue.ignore.multicriteria.e13.ruleKey>
+        
+    <!-- Disable rule for "Use static access with
+    "javax.swing.WindowConstants" -->
+    <sonar.issue.ignore.multicriteria.e14.ruleKey>
+            java:S3252
+    </sonar.issue.ignore.multicriteria.e14.ruleKey>
+    <sonar.issue.ignore.multicriteria.e14.resourceKey>
+        **/*CombinedSwingView.java
+    </sonar.issue.ignore.multicriteria.e14.resourceKey>
+
+    <sonar.coverage.exclusions>
+            **/entity/*.*,
+            **/LibrarySwingApp.*
+    </sonar.coverage.exclusions>
+
+    <sonar.junit.reportPaths>
+            ${project.build.directory}/surefire-reports
+    </sonar.junit.reportPaths>
   </properties>
 
   <dependencies>
@@ -48,65 +102,113 @@
       <version>3.12.8</version>
     </dependency>
     
-     <dependency>
+    <dependency>
       <groupId>javax.persistence</groupId>
       <artifactId>javax.persistence-api</artifactId>
       <version>2.2</version>
     </dependency>
-    
   </dependencies>
-  
-  
 
   <build>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+    <pluginManagement>
       <plugins>
         <plugin>
-          <artifactId>maven-clean-plugin</artifactId>
-          <version>3.4.0</version>
+          <groupId>org.eluder.coveralls</groupId>
+          <artifactId>coveralls-maven-plugin</artifactId>
+          <version>4.3.0</version>
+          <dependencies>
+            <dependency>
+              <groupId>javax.xml.bind</groupId>
+              <artifactId>jaxb-api</artifactId>
+              <version>2.3.1</version>
+            </dependency>
+          </dependencies>
         </plugin>
+        
+        <!-- Jacoco Plugin -->
         <plugin>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>3.12.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-project-info-reports-plugin</artifactId>
-          <version>3.6.1</version>
-        </plugin>
-        <!-- see http://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
-        <plugin>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>3.3.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.13.0</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.3.0</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>3.4.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-install-plugin</artifactId>
-          <version>3.1.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.2</version>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.8.8</version>
+          <configuration>
+            <excludes>
+              <exclude>**/entity/*.*</exclude>
+              <exclude>**/LibrarySwingApp.*</exclude>
+            </excludes>
+          </configuration>
+          <executions>
+            <execution>
+              <id>default-prepare-agent</id>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>default-report</id>
+              <goals>
+                <goal>report</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>
-  </build>
 
-  <reporting>
     <plugins>
       <plugin>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.10.1</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>${sonar-maven-plugin-version}</version>
       </plugin>
     </plugins>
-  </reporting>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>coveralls</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.eluder.coveralls</groupId>
+            <artifactId>coveralls-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>verify</phase>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+  
 </project>
