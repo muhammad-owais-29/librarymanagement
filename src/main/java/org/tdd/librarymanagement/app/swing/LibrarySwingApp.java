@@ -55,6 +55,8 @@ public class LibrarySwingApp implements Callable<Void> {
 
 				combinedView.setVisible(true);
 
+				bookController.allBooks();
+
 			} catch (Exception e) {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(null, "Error initializing application: " + e.getMessage(), "Error",

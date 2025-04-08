@@ -3,12 +3,14 @@ package org.tdd.librarymanagement.view.swing;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -109,8 +111,14 @@ public class CombinedSwingView extends JFrame implements BookView {
 		// Book Buttons
 		JPanel bookButtonPanel = new JPanel();
 		bookButtonPanel.add(new JButton("Delete Book"));
-		bookButtonPanel.add(new JButton("Show All Books"));
-		bookButtonPanel.add(new JButton("Search Book"));
+
+		JButton showAllBooksButton = new JButton("Show All Books");
+		showAllBooksButton.addActionListener(e -> showAllBooks());
+		bookButtonPanel.add(showAllBooksButton);
+
+		JButton searchBookButton = new JButton("Search Book");
+		searchBookButton.addActionListener(e -> searchBook());
+		bookButtonPanel.add(searchBookButton);
 
 		panel.add(bookButtonPanel, BorderLayout.SOUTH);
 
@@ -175,13 +183,59 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 		Book book = new Book(id, serialNumber, name, author, genre, new ArrayList<>());
 		bookController.newBook(book);
+		clearBookFields();
 
 	}
 
-	@Override
-	public void bookAdded(Book newBook) {
-		// TODO Auto-generated method stub
+	private void showAllBooks() {
+		List<Book> books = bookController.allBooks();
+		showAllBooks(books);
+	}
 
+	private void searchBook() {
+		String serialNumber = JOptionPane.showInputDialog("Enter Book Serial Number to search:");
+		if (serialNumber != null) {
+			bookController.searchBook(serialNumber);
+		}
+	}
+
+	private void clearBookFields() {
+		bookIdField.setText("");
+		bookSerialNumberField.setText("");
+		bookNameField.setText("");
+		bookAuthorField.setText("");
+		bookGenreField.setText("");
+	}
+
+	@Override
+	public void showAllBooks(List<Book> books) {
+		bookTableModel.setRowCount(0);
+		for (Book book : books) {
+			bookTableModel.addRow(new Object[] { book.getId(), book.getSerialNumber(), book.getName(),
+					book.getAuthorName(), book.getGenre() });
+		}
+	}
+
+	@Override
+	public void bookAdded(Book book) {
+		showAllBooks();
+	}
+
+	@Override
+	public void showErrorBookNotFound(String message) {
+		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+	}
+
+	@Override
+	public void showSearchedBooks(Book book) {
+		bookTableModel.setRowCount(0);
+		bookTableModel.addRow(new Object[] { book.getId(), book.getSerialNumber(), book.getName(), book.getAuthorName(),
+				book.getGenre() });
+	}
+
+	@Override
+	public void showError(String message, Book book) {
+		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
 	}
 
 }
