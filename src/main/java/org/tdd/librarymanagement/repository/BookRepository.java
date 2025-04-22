@@ -14,4 +14,6 @@ public interface BookRepository {
 
 	Book findBySerialNumber(String serialNumber);
 
+	void delete(String serialNumber);
+
 }

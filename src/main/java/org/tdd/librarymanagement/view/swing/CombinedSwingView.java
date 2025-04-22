@@ -1,15 +1,19 @@
 package org.tdd.librarymanagement.view.swing;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -20,20 +24,27 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
 import org.tdd.librarymanagement.controller.BookController;
+import org.tdd.librarymanagement.controller.MemberController;
 import org.tdd.librarymanagement.entity.Book;
+import org.tdd.librarymanagement.entity.Member;
 import org.tdd.librarymanagement.view.BookView;
 
 public class CombinedSwingView extends JFrame implements BookView {
 
 	private static final long serialVersionUID = 1L;
 	private BookController bookController;
+	private MemberController memberController;
 
 	public void setBookController(BookController bookController) {
 		this.bookController = bookController;
 	}
 
+	public void setMemberController(MemberController memberController) {
+		this.memberController = memberController;
+	}
+
 	// Book Components
-	private JTextField bookIdField, bookSerialNumberField, bookNameField, bookAuthorField, bookGenreField;
+	public JTextField bookIdField, bookSerialNumberField, bookNameField, bookAuthorField, bookGenreField;
 	private JTable bookTable;
 	private DefaultTableModel bookTableModel;
 
@@ -104,13 +115,27 @@ public class CombinedSwingView extends JFrame implements BookView {
 		bookTableModel = new DefaultTableModel(bookColumns, 0);
 		bookTable = new JTable(bookTableModel);
 		bookTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		bookTable.getSelectionModel().addListSelectionListener(e -> {
+			if (!e.getValueIsAdjusting() && bookTable.getSelectedRow() != -1) {
+				int selectedRow = bookTable.getSelectedRow();
+				if (selectedRow >= 0) {
+					bookIdField.setText(bookTableModel.getValueAt(selectedRow, 0).toString());
+					bookSerialNumberField.setText(bookTableModel.getValueAt(selectedRow, 1).toString());
+					bookNameField.setText(bookTableModel.getValueAt(selectedRow, 2).toString());
+					bookAuthorField.setText(bookTableModel.getValueAt(selectedRow, 3).toString());
+					bookGenreField.setText(bookTableModel.getValueAt(selectedRow, 4).toString());
+				}
+			}
+		});
 
 		JScrollPane bookScrollPane = new JScrollPane(bookTable);
 		panel.add(bookScrollPane, BorderLayout.CENTER);
 
 		// Book Buttons
 		JPanel bookButtonPanel = new JPanel();
-		bookButtonPanel.add(new JButton("Delete Book"));
+		JButton deleteBookButton = new JButton("Delete Book");
+		deleteBookButton.addActionListener(e -> deleteBook());
+		bookButtonPanel.add(deleteBookButton);
 
 		JButton showAllBooksButton = new JButton("Show All Books");
 		showAllBooksButton.addActionListener(e -> showAllBooks());
@@ -147,9 +172,32 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 		memberFormPanel.add(new JLabel("Borrow Book:"));
 		bookDropdown = new JComboBox<>();
+		bookDropdown.setRenderer(new DefaultListCellRenderer() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if (value instanceof Book) {
+					Book book = (Book) value;
+					if (book.getId() == -1) {
+						setText("Please select a book");
+						setEnabled(false);
+					} else {
+						setText(book.getName());
+						setEnabled(true);
+					}
+				}
+				return this;
+			}
+		});
+		populateBookDropdown();
 		memberFormPanel.add(bookDropdown);
 
-		memberFormPanel.add(new JButton("Add Member"));
+		JButton addMemberButton = new JButton("Add Member");
+		addMemberButton.addActionListener(e -> addMember());
+		memberFormPanel.add(addMemberButton);
 
 		panel.add(memberFormPanel, BorderLayout.NORTH);
 
@@ -173,8 +221,25 @@ public class CombinedSwingView extends JFrame implements BookView {
 		return panel;
 	}
 
-	private void addBook() {
+	private void populateBookDropdown() {
+		DefaultComboBoxModel<Book> model = new DefaultComboBoxModel<>();
+		bookDropdown.setModel(model);
 
+		model.addElement(new Book(-1, "", "Please select a book", "", "", new ArrayList<>()));
+
+		if (bookController != null) {
+			List<Book> books = bookController.allBooks();
+			if (books != null) {
+				for (Book book : books) {
+					model.addElement(book);
+				}
+			}
+		}
+
+		bookDropdown.setSelectedIndex(0);
+	}
+
+	private void addBook() {
 		int id = Integer.parseInt(bookIdField.getText());
 		String serialNumber = bookSerialNumberField.getText();
 		String name = bookNameField.getText();
@@ -184,7 +249,6 @@ public class CombinedSwingView extends JFrame implements BookView {
 		Book book = new Book(id, serialNumber, name, author, genre, new ArrayList<>());
 		bookController.newBook(book);
 		clearBookFields();
-
 	}
 
 	private void showAllBooks() {
@@ -199,12 +263,52 @@ public class CombinedSwingView extends JFrame implements BookView {
 		}
 	}
 
+	private void deleteBook() {
+		int selectedRow = bookTable.getSelectedRow();
+		if (selectedRow >= 0) {
+			String serialNumber = bookTableModel.getValueAt(selectedRow, 1).toString();
+			Book book = new Book(0, serialNumber, null, null, null, null);
+			bookController.deleteBook(book);
+		}
+	}
+
 	private void clearBookFields() {
 		bookIdField.setText("");
 		bookSerialNumberField.setText("");
 		bookNameField.setText("");
 		bookAuthorField.setText("");
 		bookGenreField.setText("");
+	}
+
+	private void addMember() {
+		int id = Integer.parseInt(memberIdField.getText());
+		String name = memberNameField.getText();
+		String email = memberEmailField.getText();
+		Book selectedBook = (Book) bookDropdown.getSelectedItem();
+
+		Member member = new Member(id, name, email, null);
+		memberController.newMember(member);
+
+		Member savedMember = memberController.allMembers().stream().filter(m -> m.getId() == id).findFirst()
+				.orElse(null);
+
+		if (selectedBook != null && savedMember != null) {
+			memberController.borrowBook(savedMember, selectedBook);
+		}
+
+		clearMemberFields();
+		refreshBookDropdown();
+	}
+
+	private void showAllMembers() {
+		List<Member> members = memberController.allMembers();
+		showAllMembers(members);
+	}
+
+	private void clearMemberFields() {
+		memberIdField.setText("");
+		memberNameField.setText("");
+		memberEmailField.setText("");
 	}
 
 	@Override
@@ -218,6 +322,11 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 	@Override
 	public void bookAdded(Book book) {
+		showAllBooks();
+	}
+
+	@Override
+	public void bookRemoved(Book book) {
 		showAllBooks();
 	}
 
@@ -238,4 +347,37 @@ public class CombinedSwingView extends JFrame implements BookView {
 		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
 	}
 
+	@Override
+	public void showErrorBookNotFound(String message, Book book) {
+		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+	}
+
+	@Override
+	public void memberAdded(Member member) {
+		showAllMembers();
+	}
+
+	@Override
+	public void showError(String message, Member member) {
+		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+	}
+
+	@Override
+	public void refreshBookDropdown() {
+		populateBookDropdown();
+	}
+
+	@Override
+	public void showAllMembers(List<Member> members) {
+		memberTableModel.setRowCount(0);
+		for (Member member : members) {
+			String borrowedBook = "None";
+			if (member.getBook() != null) {
+				Book currentBook = bookController.findById(member.getBook().getId());
+				borrowedBook = currentBook != null ? currentBook.getName() : "Unknown";
+			}
+
+			memberTableModel.addRow(new Object[] { member.getId(), member.getName(), member.getEmail(), borrowedBook });
+		}
+	}
 }

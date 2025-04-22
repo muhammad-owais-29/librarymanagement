@@ -39,7 +39,6 @@ public class Member {
 		this.book = book;
 	}
 
-	// Getters and Setters
 	public int getId() {
 		return id;
 	}

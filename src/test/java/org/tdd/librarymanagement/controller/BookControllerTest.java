@@ -55,6 +55,7 @@ public class BookControllerTest {
 		// When
 		bookController.newBook(newBook);
 
+		// Then
 		verify(bookRepository).save(newBook);
 		verify(bookView).bookAdded(newBook);
 
@@ -148,6 +149,94 @@ public class BookControllerTest {
 
 		// Then
 		verify(bookView).showErrorBookNotFound("No existing book with serial number 999");
+	}
+
+	@Test
+	public void deleteExistingBook() {
+		// Given
+		when(bookRepository.findBySerialNumber("123")).thenReturn(validBook);
+
+		// When
+		bookController.deleteBook(validBook);
+
+		// Then
+		verify(bookRepository).delete("123");
+		verify(bookView).bookRemoved(validBook);
+	}
+
+	@Test
+	public void deleteNonExistingBook() {
+		// Given
+		when(bookRepository.findBySerialNumber("999")).thenReturn(null);
+		Book bookToDelete = new Book(99, "999", "Title", "Author", "Genre", borrowers);
+
+		// When
+		bookController.deleteBook(bookToDelete);
+
+		// Then
+		verify(bookView).showErrorBookNotFound("No existing book with serial number 999", bookToDelete);
+		verify(bookRepository, never()).delete(any());
+	}
+
+	@Test
+	public void updateBookRejectDuplicateSerialNumber() {
+		// Given
+		Book existingBook = new Book(1, "123", "Old Title", "Old Author", "Genre", borrowers);
+		Book conflictingBook = new Book(2, "456", "Java", "java Author", "Genre", borrowers);
+
+		when(bookRepository.findById(1)).thenReturn(existingBook);
+		when(bookRepository.findBySerialNumber("456")).thenReturn(conflictingBook);
+
+		// When
+		Book updateAttempt = new Book(1, "456", "New Title", "New Author", "Genre", borrowers);
+		bookController.updateBook(updateAttempt);
+
+		// Then
+		verify(bookView).showError("Serial number already exists", updateAttempt);
+		verify(bookRepository, never()).save(any());
+	}
+
+	@Test
+	public void updateBookSerialNumberNotChanged() {
+		// Given
+		when(bookRepository.findById(1)).thenReturn(validBook);
+
+		// When
+		Book updatedBook = new Book(1, "123", "Updated Title", "Updated Author", "Genre", borrowers);
+		bookController.updateBook(updatedBook);
+
+		// Then
+		verify(bookRepository).save(updatedBook);
+		verify(bookView).bookAdded(updatedBook);
+	}
+
+	@Test
+	public void updateBookWhenNewSerialNumberIsUnique() {
+		// Given
+		when(bookRepository.findById(1)).thenReturn(validBook);
+		when(bookRepository.findBySerialNumber("789")).thenReturn(null);
+
+		// When
+		Book updatedBook = new Book(1, "789", "Updated Title", "Updated Author", "Genre", borrowers);
+		bookController.updateBook(updatedBook);
+
+		// Then
+		verify(bookRepository).save(updatedBook);
+		verify(bookView).bookAdded(updatedBook);
+	}
+
+	@Test
+	public void updateBookWhenBookNotFound() {
+		// Given
+		Book nonExistentBook = new Book(99, "999", "Java Book", "No Author", "Genre", borrowers);
+		when(bookRepository.findById(99)).thenReturn(null);
+
+		// When
+		bookController.updateBook(nonExistentBook);
+
+		// Then
+		verify(bookView).showErrorBookNotFound("No existing book with ID 99", nonExistentBook);
+		verify(bookRepository, never()).save(any());
 	}
 
 }

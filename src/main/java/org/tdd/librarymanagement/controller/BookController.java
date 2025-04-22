@@ -17,26 +17,26 @@ public class BookController {
 	}
 
 	public void newBook(Book book) {
-        if (book.getId() <= 0) {
-            bookView.showError("ID must be a positive number", book);
-            return;
-        }
-        
-        Book existingBook = bookRepository.findBySerialNumber(book.getSerialNumber());
-        if (existingBook != null) {
-            bookView.showError("Already existing book with serial number " + book.getSerialNumber(), existingBook);
-            return;
-        }
-        
-        Book existingBookById = bookRepository.findById(book.getId());
-        if (existingBookById != null) {
-            bookView.showError("ID Already exists " + book.getId(), existingBookById);
-            return;
-        }
+		if (book.getId() <= 0) {
+			bookView.showError("ID must be a positive number", book);
+			return;
+		}
 
-        bookRepository.save(book);
-        bookView.bookAdded(book);
-    }
+		Book existingBook = bookRepository.findBySerialNumber(book.getSerialNumber());
+		if (existingBook != null) {
+			bookView.showError("Already existing book with serial number " + book.getSerialNumber(), existingBook);
+			return;
+		}
+
+		Book existingBookById = bookRepository.findById(book.getId());
+		if (existingBookById != null) {
+			bookView.showError("ID Already exists " + book.getId(), existingBookById);
+			return;
+		}
+
+		bookRepository.save(book);
+		bookView.bookAdded(book);
+	}
 
 	public Book findById(int id) {
 		return bookRepository.findById(id);
@@ -56,6 +56,36 @@ public class BookController {
 		}
 
 		bookView.showSearchedBooks(book);
+	}
+
+	public void deleteBook(Book book) {
+		Book existingBook = bookRepository.findBySerialNumber(book.getSerialNumber());
+		if (existingBook == null) {
+			bookView.showErrorBookNotFound("No existing book with serial number " + book.getSerialNumber(), book);
+			return;
+		}
+
+		bookRepository.delete(book.getSerialNumber());
+		bookView.bookRemoved(book);
+	}
+
+	public void updateBook(Book book) {
+		Book existingBook = bookRepository.findById(book.getId());
+		if (existingBook == null) {
+			bookView.showErrorBookNotFound("No existing book with ID " + book.getId(), book);
+			return;
+		}
+
+		// Check if serial number is being changed to one that already exists
+		if (!existingBook.getSerialNumber().equals(book.getSerialNumber())) {
+			Book bookWithSameSerial = bookRepository.findBySerialNumber(book.getSerialNumber());
+			if (bookWithSameSerial != null) {
+				bookView.showError("Serial number already exists", book);
+				return;
+			}
+		}
+		bookRepository.save(book);
+		bookView.bookAdded(book);
 	}
 
 }

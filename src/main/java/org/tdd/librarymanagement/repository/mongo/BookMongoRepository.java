@@ -55,6 +55,11 @@ public class BookMongoRepository implements BookRepository {
 		return document != null ? fromDocumentToBook(document) : null;
 	}
 
+	@Override
+	public void delete(String serialNumber) {
+		bookCollection.deleteOne(Filters.eq(SERIAL_NUMBER_FIELD, serialNumber));
+	}
+
 	private Book fromDocumentToBook(Document d) {
 		if (d == null) {
 			return null;
