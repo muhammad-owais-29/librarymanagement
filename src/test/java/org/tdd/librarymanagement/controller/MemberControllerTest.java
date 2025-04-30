@@ -2,6 +2,7 @@ package org.tdd.librarymanagement.controller;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -222,6 +223,45 @@ public class MemberControllerTest {
 		verify(bookRepository).save(validBook);
 		verify(bookView).refreshBookDropdown();
 		verify(bookView, times(2)).showAllMembers(anyList());
+	}
+
+	@Test
+	public void deleteMemberNonExisting() {
+		when(memberRepository.findById(99)).thenReturn(null);
+
+		Member nonExistingMember = new Member(99, "Non-existent", "none@example.com", null);
+		memberController.deleteMember(nonExistingMember);
+
+		verify(bookView).showErrorMemberNotFound("No existing member with id 99", nonExistingMember);
+		verify(memberRepository, never()).delete(anyInt());
+	}
+
+	@Test
+	public void deleteMemberExistingMember() {
+		when(memberRepository.findById(1)).thenReturn(validMember);
+
+		memberController.deleteMember(validMember);
+
+		verify(memberRepository).delete(1);
+		verify(bookView).memberRemoved(validMember);
+	}
+
+	@Test
+	public void searchMemberNotFound() {
+		when(memberRepository.findById(99)).thenReturn(null);
+
+		memberController.searchMember(99);
+
+		verify(bookView).showErrorMemberNotFound("No existing member with id 99");
+	}
+
+	@Test
+	public void searchMemberFoundMember() {
+		when(memberRepository.findById(1)).thenReturn(validMember);
+
+		memberController.searchMember(1);
+
+		verify(bookView).showSearchedMembers(validMember);
 	}
 
 }

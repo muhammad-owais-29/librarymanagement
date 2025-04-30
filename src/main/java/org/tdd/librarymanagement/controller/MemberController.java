@@ -77,4 +77,25 @@ public class MemberController {
 		bookView.showAllMembers(allMembers());
 	}
 
+	public void deleteMember(Member member) {
+		Member existingMember = memberRepository.findById(member.getId());
+		if (existingMember == null) {
+			bookView.showErrorMemberNotFound("No existing member with id " + member.getId(), member);
+			return;
+		}
+
+		memberRepository.delete(member.getId());
+		bookView.memberRemoved(member);
+	}
+
+	public void searchMember(int id) {
+		Member member = memberRepository.findById(id);
+		if (member == null) {
+			bookView.showErrorMemberNotFound("No existing member with id " + id);
+			return;
+		}
+
+		bookView.showSearchedMembers(member);
+	}
+
 }

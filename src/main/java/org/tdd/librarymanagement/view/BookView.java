@@ -25,8 +25,18 @@ public interface BookView {
 
 	public void showError(String message, Member member);
 
-	void refreshBookDropdown();
-
 	public void showAllMembers(List<Member> members);
+
+	public void memberRemoved(Member member);
+
+	public void showSearchedMembers(Member member);
+
+	public void showErrorMemberNotFound(String message, Member member);
+
+	public void showErrorMemberNotFound(String message);
+
+	void showMessage(String message);
+
+	void refreshBookDropdown();
 
 }

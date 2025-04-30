@@ -57,6 +57,11 @@ public class MemberMongoRepository implements MemberRepository {
 		}
 	}
 
+	@Override
+	public void delete(int id) {
+		memberCollection.deleteOne(Filters.eq(ID_FIELD, id));
+	}
+
 	private Member fromDocumentToMember(Document d) {
 		if (d == null) {
 			return null;

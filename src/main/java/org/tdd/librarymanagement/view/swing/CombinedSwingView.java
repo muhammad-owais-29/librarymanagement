@@ -106,7 +106,8 @@ public class CombinedSwingView extends JFrame implements BookView {
 		bookFormPanel.add(addBookButton);
 
 		JButton updateBookButton = new JButton("Update Book");
-		bookFormPanel.add(updateBookButton);
+        updateBookButton.addActionListener(e -> updateBook());
+        bookFormPanel.add(updateBookButton);
 
 		panel.add(bookFormPanel, BorderLayout.NORTH);
 
@@ -212,9 +213,20 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 		// Member Buttons
 		JPanel memberButtonPanel = new JPanel();
-		memberButtonPanel.add(new JButton("Delete Member"));
-		memberButtonPanel.add(new JButton("Show All Members"));
-		memberButtonPanel.add(new JButton("Search Member"));
+
+		JButton deleteMemberButton = new JButton("Delete Member");
+		deleteMemberButton.addActionListener(e -> deleteMember());
+		memberButtonPanel.add(deleteMemberButton);
+
+		JButton showAllMembersButton = new JButton("Show All Members");
+		showAllMembersButton.addActionListener(e -> showAllMembers());
+		memberButtonPanel.add(showAllMembersButton);
+
+		JButton searchMemberButton = new JButton("Search Member");
+		searchMemberButton.addActionListener(e -> searchMember());
+		memberButtonPanel.add(searchMemberButton);
+
+		panel.add(memberButtonPanel, BorderLayout.SOUTH);
 
 		panel.add(memberButtonPanel, BorderLayout.SOUTH);
 
@@ -271,6 +283,24 @@ public class CombinedSwingView extends JFrame implements BookView {
 			bookController.deleteBook(book);
 		}
 	}
+	
+	private void updateBook() {
+        int selectedRow = bookTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            int id = Integer.parseInt(bookIdField.getText());
+            String serialNumber = bookSerialNumberField.getText();
+            String name = bookNameField.getText();
+            String author = bookAuthorField.getText();
+            String genre = bookGenreField.getText();
+            if (!serialNumber.isEmpty() && !name.isEmpty() && !author.isEmpty() && !genre.isEmpty()) {
+                Book book = new Book(id, serialNumber, name, author, genre,  null);
+                bookController.updateBook(book);
+                clearBookFields();
+            } else {
+                showError("All fields must be filled", (Book) null);
+            }
+        }
+    }
 
 	private void clearBookFields() {
 		bookIdField.setText("");
@@ -303,6 +333,27 @@ public class CombinedSwingView extends JFrame implements BookView {
 	private void showAllMembers() {
 		List<Member> members = memberController.allMembers();
 		showAllMembers(members);
+	}
+
+	private void searchMember() {
+		String idStr = JOptionPane.showInputDialog("Enter Member ID to search:");
+		if (idStr != null) {
+			try {
+				int id = Integer.parseInt(idStr);
+				memberController.searchMember(id);
+			} catch (NumberFormatException ex) {
+				JOptionPane.showMessageDialog(this, "Invalid ID format", "Error", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+	}
+
+	private void deleteMember() {
+		int selectedRow = memberTable.getSelectedRow();
+		if (selectedRow >= 0) {
+			int id = Integer.parseInt(memberTableModel.getValueAt(selectedRow, 0).toString());
+			Member member = new Member(id, null, null, null);
+			memberController.deleteMember(member);
+		}
 	}
 
 	private void clearMemberFields() {
@@ -358,6 +409,17 @@ public class CombinedSwingView extends JFrame implements BookView {
 	}
 
 	@Override
+	public void memberRemoved(Member member) {
+		showAllMembers();
+	}
+
+	@Override
+	public void showSearchedMembers(Member member) {
+		memberTableModel.setRowCount(0);
+		memberTableModel.addRow(new Object[] { member.getId(), member.getName(), member.getEmail() });
+	}
+
+	@Override
 	public void showError(String message, Member member) {
 		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
 	}
@@ -365,6 +427,21 @@ public class CombinedSwingView extends JFrame implements BookView {
 	@Override
 	public void refreshBookDropdown() {
 		populateBookDropdown();
+	}
+
+	@Override
+	public void showErrorMemberNotFound(String message, Member member) {
+		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+	}
+
+	@Override
+	public void showErrorMemberNotFound(String message) {
+		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+	}
+
+	@Override
+	public void showMessage(String message) {
+		JOptionPane.showMessageDialog(this, message, "Success", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	@Override
