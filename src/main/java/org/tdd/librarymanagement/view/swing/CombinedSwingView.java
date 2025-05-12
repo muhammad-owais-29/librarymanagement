@@ -32,8 +32,20 @@ import org.tdd.librarymanagement.view.BookView;
 public class CombinedSwingView extends JFrame implements BookView {
 
 	private static final long serialVersionUID = 1L;
-	private BookController bookController;
-	private MemberController memberController;
+	private transient BookController bookController;
+	private transient MemberController memberController;
+
+	private JTextField bookIdField;
+	private JTextField bookSerialNumberField;
+	private JTextField bookNameField;
+	private JTextField bookAuthorField;
+	private JTextField bookGenreField;
+
+	private JTextField memberIdField;
+	private JTextField memberNameField;
+	private JTextField memberEmailField;
+
+	private static final String ERROR = "Error";
 
 	public void setBookController(BookController bookController) {
 		this.bookController = bookController;
@@ -44,12 +56,10 @@ public class CombinedSwingView extends JFrame implements BookView {
 	}
 
 	// Book Components
-	public JTextField bookIdField, bookSerialNumberField, bookNameField, bookAuthorField, bookGenreField;
 	private JTable bookTable;
 	private DefaultTableModel bookTableModel;
 
 	// Member Components
-	private JTextField memberIdField, memberNameField, memberEmailField;
 	private JTable memberTable;
 	private DefaultTableModel memberTableModel;
 	private JComboBox<Book> bookDropdown;
@@ -106,8 +116,8 @@ public class CombinedSwingView extends JFrame implements BookView {
 		bookFormPanel.add(addBookButton);
 
 		JButton updateBookButton = new JButton("Update Book");
-        updateBookButton.addActionListener(e -> updateBook());
-        bookFormPanel.add(updateBookButton);
+		updateBookButton.addActionListener(e -> updateBook());
+		bookFormPanel.add(updateBookButton);
 
 		panel.add(bookFormPanel, BorderLayout.NORTH);
 
@@ -283,24 +293,24 @@ public class CombinedSwingView extends JFrame implements BookView {
 			bookController.deleteBook(book);
 		}
 	}
-	
+
 	private void updateBook() {
-        int selectedRow = bookTable.getSelectedRow();
-        if (selectedRow >= 0) {
-            int id = Integer.parseInt(bookIdField.getText());
-            String serialNumber = bookSerialNumberField.getText();
-            String name = bookNameField.getText();
-            String author = bookAuthorField.getText();
-            String genre = bookGenreField.getText();
-            if (!serialNumber.isEmpty() && !name.isEmpty() && !author.isEmpty() && !genre.isEmpty()) {
-                Book book = new Book(id, serialNumber, name, author, genre,  null);
-                bookController.updateBook(book);
-                clearBookFields();
-            } else {
-                showError("All fields must be filled", (Book) null);
-            }
-        }
-    }
+		int selectedRow = bookTable.getSelectedRow();
+		if (selectedRow >= 0) {
+			int id = Integer.parseInt(bookIdField.getText());
+			String serialNumber = bookSerialNumberField.getText();
+			String name = bookNameField.getText();
+			String author = bookAuthorField.getText();
+			String genre = bookGenreField.getText();
+			if (!serialNumber.isEmpty() && !name.isEmpty() && !author.isEmpty() && !genre.isEmpty()) {
+				Book book = new Book(id, serialNumber, name, author, genre, null);
+				bookController.updateBook(book);
+				clearBookFields();
+			} else {
+				showError("All fields must be filled", (Book) null);
+			}
+		}
+	}
 
 	private void clearBookFields() {
 		bookIdField.setText("");
@@ -342,7 +352,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 				int id = Integer.parseInt(idStr);
 				memberController.searchMember(id);
 			} catch (NumberFormatException ex) {
-				JOptionPane.showMessageDialog(this, "Invalid ID format", "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "Invalid ID format", ERROR, JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}
@@ -383,7 +393,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 	@Override
 	public void showErrorBookNotFound(String message) {
-		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(this, message, ERROR, JOptionPane.ERROR_MESSAGE);
 	}
 
 	@Override
@@ -395,12 +405,12 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 	@Override
 	public void showError(String message, Book book) {
-		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(this, message, ERROR, JOptionPane.ERROR_MESSAGE);
 	}
 
 	@Override
 	public void showErrorBookNotFound(String message, Book book) {
-		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(this, message, ERROR, JOptionPane.ERROR_MESSAGE);
 	}
 
 	@Override
@@ -421,7 +431,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 	@Override
 	public void showError(String message, Member member) {
-		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(this, message, ERROR, JOptionPane.ERROR_MESSAGE);
 	}
 
 	@Override
@@ -431,12 +441,12 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 	@Override
 	public void showErrorMemberNotFound(String message, Member member) {
-		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(this, message, ERROR, JOptionPane.ERROR_MESSAGE);
 	}
 
 	@Override
 	public void showErrorMemberNotFound(String message) {
-		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(this, message, ERROR, JOptionPane.ERROR_MESSAGE);
 	}
 
 	@Override
