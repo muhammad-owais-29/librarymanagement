@@ -49,7 +49,7 @@ public class MemberControllerTest {
 
 		validBook = new Book(1, "123", "Book1", "Author1", "Genre1", null);
 		validMember = new Member(1, "owais", "owais@gmail.com", validBook);
-		anotherMember = new Member(2, "test2", "test2@gmail.com.com", null);
+		anotherMember = new Member(2, "test2", "test2@gmail.com", null);
 
 	}
 
@@ -100,7 +100,7 @@ public class MemberControllerTest {
 	public void allMembersBookIdNotFound() {
 		// Given
 		Book unknownBook = new Book(99, "999", "unknown Book", "unknown Author2", "Genre2", null);
-		Member memberWithNonExistentBook = new Member(4, "test2", "test2@gmail.com.com", unknownBook);
+		Member memberWithNonExistentBook = new Member(4, "test2", "test2@gmail.com", unknownBook);
 		when(memberRepository.findAll()).thenReturn(Collections.singletonList(memberWithNonExistentBook));
 		when(bookRepository.findById(99)).thenReturn(null);
 

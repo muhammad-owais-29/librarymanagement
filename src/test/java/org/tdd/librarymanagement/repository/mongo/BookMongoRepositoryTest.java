@@ -128,7 +128,7 @@ public class BookMongoRepositoryTest {
 	}
 
 	@Test
-	public void save_shouldInsertNewBook() {
+	public void saveInsertNewBook() {
 		// Given
 		when(bookCollection.find(Filters.eq("id", 1))).thenReturn(findIterable);
 		when(findIterable.first()).thenReturn(null);
