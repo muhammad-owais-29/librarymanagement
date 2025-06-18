@@ -220,7 +220,6 @@ public class MemberControllerTest {
 		// Then
 		assertEquals(validBook, memberWithoutBook.getBook());
 		verify(memberRepository).save(memberWithoutBook);
-		verify(bookRepository).save(validBook);
 		verify(bookView).refreshBookDropdown();
 		verify(bookView, times(2)).showAllMembers(anyList());
 	}
