@@ -70,7 +70,7 @@ public class BookControllerTest {
 		bookController.newBook(new Book(1, "123", "New Book", "New Author", "Genre", borrowers));
 
 		// Then
-		verify(bookView).showError("Already existing book with serial number 123", validBook);
+		verify(bookView).showBookError("Already existing book with serial number 123", validBook);
 		verify(bookRepository, never()).save(any());
 	}
 
@@ -83,7 +83,7 @@ public class BookControllerTest {
 		bookController.newBook(invalidBook);
 
 		// Then
-		verify(bookView).showError("ID must be a positive number", invalidBook);
+		verify(bookView).showBookError("ID must be a positive number", invalidBook);
 		verify(bookRepository, never()).save(any());
 	}
 
@@ -96,7 +96,7 @@ public class BookControllerTest {
 		bookController.newBook(new Book(1, "789", "New Book", "New Author", "Genre", borrowers));
 
 		// Then
-		verify(bookView).showError("ID Already exists 1", validBook);
+		verify(bookView).showBookError("ID Already exists 1", validBook);
 		verify(bookRepository, never()).save(any());
 	}
 
@@ -192,7 +192,7 @@ public class BookControllerTest {
 		bookController.updateBook(updateAttempt);
 
 		// Then
-		verify(bookView).showError("Serial number already exists", updateAttempt);
+		verify(bookView).showBookError("Serial number already exists", updateAttempt);
 		verify(bookRepository, never()).save(any());
 	}
 

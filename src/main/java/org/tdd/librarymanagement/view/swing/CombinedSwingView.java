@@ -1,6 +1,7 @@
 package org.tdd.librarymanagement.view.swing;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.util.ArrayList;
@@ -20,7 +21,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import org.tdd.librarymanagement.controller.BookController;
@@ -30,11 +33,12 @@ import org.tdd.librarymanagement.entity.Member;
 import org.tdd.librarymanagement.view.BookView;
 
 public class CombinedSwingView extends JFrame implements BookView {
-
 	private static final long serialVersionUID = 1L;
+
 	private transient BookController bookController;
 	private transient MemberController memberController;
 
+	// Input fields
 	private JTextField bookIdField;
 	private JTextField bookSerialNumberField;
 	private JTextField bookNameField;
@@ -45,7 +49,15 @@ public class CombinedSwingView extends JFrame implements BookView {
 	private JTextField memberNameField;
 	private JTextField memberEmailField;
 
-	private static final String ERROR = "Error";
+	// Status labels
+	private JLabel bookStatusLabel;
+	private JLabel memberStatusLabel;
+
+	// Tables
+	private JTable bookTable;
+	private DefaultTableModel bookTableModel;
+	private JTable memberTable;
+	private DefaultTableModel memberTableModel;
 
 	public void setBookController(BookController bookController) {
 		this.bookController = bookController;
@@ -55,13 +67,27 @@ public class CombinedSwingView extends JFrame implements BookView {
 		this.memberController = memberController;
 	}
 
-	// Book Components
-	private JTable bookTable;
-	private DefaultTableModel bookTableModel;
+	public JTable getBookTable() {
+		return bookTable;
+	}
 
-	// Member Components
-	private JTable memberTable;
-	private DefaultTableModel memberTableModel;
+	public JTable getMemberTable() {
+		return memberTable;
+	}
+
+	// Add these fields:
+	private ListSelectionListener bookTableSelectionListener;
+	private ListSelectionListener memberTableSelectionListener;
+
+	public ListSelectionListener getBookTableSelectionListener() {
+		return bookTableSelectionListener;
+	}
+
+	public ListSelectionListener getMemberTableSelectionListener() {
+		return memberTableSelectionListener;
+	}
+
+	// Dropdown
 	private JComboBox<Book> bookDropdown;
 
 	public CombinedSwingView() {
@@ -70,119 +96,146 @@ public class CombinedSwingView extends JFrame implements BookView {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(new BorderLayout());
 
-		// split pane to divide the window into two parts
+		// Status panel at bottom
+		JPanel statusPanel = new JPanel(new GridLayout(1, 2));
+		bookStatusLabel = new JLabel(" ", SwingConstants.CENTER);
+		bookStatusLabel.setName("bookStatusLabel");
+		bookStatusLabel.setForeground(Color.RED);
+
+		memberStatusLabel = new JLabel(" ", SwingConstants.CENTER);
+		memberStatusLabel.setName("memberStatusLabel");
+		memberStatusLabel.setForeground(Color.RED);
+
+		statusPanel.add(bookStatusLabel);
+		statusPanel.add(memberStatusLabel);
+		add(statusPanel, BorderLayout.SOUTH);
+
+		// Split pane for book/member panels
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		splitPane.setDividerLocation(600);
-
-		JPanel bookPanel = createBookPanel();
-		splitPane.setLeftComponent(bookPanel);
-
-		JPanel memberPanel = createMemberPanel();
-		splitPane.setRightComponent(memberPanel);
-
+		splitPane.setLeftComponent(createBookPanel());
+		splitPane.setRightComponent(createMemberPanel());
 		add(splitPane, BorderLayout.CENTER);
+
+		SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(600));
+
 	}
 
-	// Create the Book Panel
 	private JPanel createBookPanel() {
 		JPanel panel = new JPanel(new BorderLayout());
 
 		// Book Form
-		JPanel bookFormPanel = new JPanel(new GridLayout(6, 2, 5, 5));
-		bookFormPanel.setBorder(BorderFactory.createTitledBorder("Book Form"));
+		JPanel formPanel = new JPanel(new GridLayout(6, 2, 5, 5));
+		formPanel.setBorder(BorderFactory.createTitledBorder("Book Form"));
 
-		bookFormPanel.add(new JLabel("ID:"));
+		// Add all book form components
+		formPanel.add(new JLabel("ID:"));
 		bookIdField = new JTextField();
-		bookFormPanel.add(bookIdField);
+		bookIdField.setName("bookIdField");
+		formPanel.add(bookIdField);
 
-		bookFormPanel.add(new JLabel("Serial Number:"));
+		formPanel.add(new JLabel("Serial Number:"));
 		bookSerialNumberField = new JTextField();
-		bookFormPanel.add(bookSerialNumberField);
+		bookSerialNumberField.setName("bookSerialNumberField");
+		formPanel.add(bookSerialNumberField);
 
-		bookFormPanel.add(new JLabel("Name:"));
+		formPanel.add(new JLabel("Name:"));
 		bookNameField = new JTextField();
-		bookFormPanel.add(bookNameField);
+		bookNameField.setName("bookNameField");
+		formPanel.add(bookNameField);
 
-		bookFormPanel.add(new JLabel("Author:"));
+		formPanel.add(new JLabel("Author:"));
 		bookAuthorField = new JTextField();
-		bookFormPanel.add(bookAuthorField);
+		bookAuthorField.setName("bookAuthorField");
+		formPanel.add(bookAuthorField);
 
-		bookFormPanel.add(new JLabel("Genre:"));
+		formPanel.add(new JLabel("Genre:"));
 		bookGenreField = new JTextField();
-		bookFormPanel.add(bookGenreField);
+		bookGenreField.setName("bookGenreField");
+		formPanel.add(bookGenreField);
 
-		JButton addBookButton = new JButton("Add Book");
-		addBookButton.addActionListener(e -> addBook());
-		bookFormPanel.add(addBookButton);
+		JButton addButton = new JButton("Add Book");
+		addButton.setName("addBookButton");
+		addButton.addActionListener(e -> addBook());
+		formPanel.add(addButton);
 
-		JButton updateBookButton = new JButton("Update Book");
-		updateBookButton.addActionListener(e -> updateBook());
-		bookFormPanel.add(updateBookButton);
+		JButton updateButton = new JButton("Update Book");
+		updateButton.setName("updateBookButton");
+		updateButton.addActionListener(e -> updateBook());
+		formPanel.add(updateButton);
 
-		panel.add(bookFormPanel, BorderLayout.NORTH);
+		panel.add(formPanel, BorderLayout.NORTH);
 
 		// Book Table
-		String[] bookColumns = { "ID", "Serial Number", "Name", "Author", "Genre" };
-		bookTableModel = new DefaultTableModel(bookColumns, 0);
+		bookTableModel = new DefaultTableModel(new String[] { "ID", "Serial Number", "Name", "Author", "Genre" }, 0);
 		bookTable = new JTable(bookTableModel);
-		bookTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		bookTable.getSelectionModel().addListSelectionListener(e -> {
-			if (!e.getValueIsAdjusting() && bookTable.getSelectedRow() != -1) {
-				int selectedRow = bookTable.getSelectedRow();
-				if (selectedRow >= 0) {
-					bookIdField.setText(bookTableModel.getValueAt(selectedRow, 0).toString());
-					bookSerialNumberField.setText(bookTableModel.getValueAt(selectedRow, 1).toString());
-					bookNameField.setText(bookTableModel.getValueAt(selectedRow, 2).toString());
-					bookAuthorField.setText(bookTableModel.getValueAt(selectedRow, 3).toString());
-					bookGenreField.setText(bookTableModel.getValueAt(selectedRow, 4).toString());
+		bookTable.setName("bookTable");
+
+		bookTableSelectionListener = e -> {
+			if (!e.getValueIsAdjusting()) {
+				int row = bookTable.getSelectedRow();
+				if (row != -1) {
+					bookIdField.setText(bookTableModel.getValueAt(row, 0).toString());
+					bookSerialNumberField.setText(bookTableModel.getValueAt(row, 1).toString());
+					bookNameField.setText(bookTableModel.getValueAt(row, 2).toString());
+					bookAuthorField.setText(bookTableModel.getValueAt(row, 3).toString());
+					bookGenreField.setText(bookTableModel.getValueAt(row, 4).toString());
+				} else {
+					clearBookFields();
 				}
 			}
-		});
+		};
+		bookTable.getSelectionModel().addListSelectionListener(bookTableSelectionListener);
 
-		JScrollPane bookScrollPane = new JScrollPane(bookTable);
-		panel.add(bookScrollPane, BorderLayout.CENTER);
+		panel.add(new JScrollPane(bookTable), BorderLayout.CENTER);
 
-		// Book Buttons
-		JPanel bookButtonPanel = new JPanel();
+		// Button panel
+		JPanel buttonPanel = new JPanel();
+
 		JButton deleteBookButton = new JButton("Delete Book");
+		deleteBookButton.setName("deleteBookButton");
 		deleteBookButton.addActionListener(e -> deleteBook());
-		bookButtonPanel.add(deleteBookButton);
+		buttonPanel.add(deleteBookButton);
 
 		JButton showAllBooksButton = new JButton("Show All Books");
+		showAllBooksButton.setName("showAllBooksButton");
 		showAllBooksButton.addActionListener(e -> showAllBooks());
-		bookButtonPanel.add(showAllBooksButton);
+		buttonPanel.add(showAllBooksButton);
 
 		JButton searchBookButton = new JButton("Search Book");
+		searchBookButton.setName("searchBookButton");
 		searchBookButton.addActionListener(e -> searchBook());
-		bookButtonPanel.add(searchBookButton);
+		buttonPanel.add(searchBookButton);
 
-		panel.add(bookButtonPanel, BorderLayout.SOUTH);
+		panel.add(buttonPanel, BorderLayout.SOUTH);
 
 		return panel;
 	}
 
-	// Create the Member Panel
 	private JPanel createMemberPanel() {
 		JPanel panel = new JPanel(new BorderLayout());
 
 		// Member Form
-		JPanel memberFormPanel = new JPanel(new GridLayout(5, 2, 5, 5));
-		memberFormPanel.setBorder(BorderFactory.createTitledBorder("Member Form"));
+		JPanel formPanel = new JPanel(new GridLayout(5, 2, 5, 5));
+		formPanel.setBorder(BorderFactory.createTitledBorder("Member Form"));
 
-		memberFormPanel.add(new JLabel("ID:"));
+		formPanel.add(new JLabel("ID:"));
 		memberIdField = new JTextField();
-		memberFormPanel.add(memberIdField);
+		memberIdField.setName("memberIdField");
+		formPanel.add(memberIdField);
 
-		memberFormPanel.add(new JLabel("Name:"));
+		formPanel.add(new JLabel("Name:"));
 		memberNameField = new JTextField();
-		memberFormPanel.add(memberNameField);
+		memberNameField.setName("memberNameField");
+		formPanel.add(memberNameField);
 
-		memberFormPanel.add(new JLabel("Email:"));
+		formPanel.add(new JLabel("Email:"));
 		memberEmailField = new JTextField();
-		memberFormPanel.add(memberEmailField);
+		memberEmailField.setName("memberEmailField");
+		formPanel.add(memberEmailField);
 
-		memberFormPanel.add(new JLabel("Borrow Book:"));
+		formPanel.add(new JLabel("Borrow Book:"));
 		bookDropdown = new JComboBox<>();
+		bookDropdown.setName("bookDropdown");
 		bookDropdown.setRenderer(new DefaultListCellRenderer() {
 			private static final long serialVersionUID = 1L;
 
@@ -197,48 +250,60 @@ public class CombinedSwingView extends JFrame implements BookView {
 						setEnabled(false);
 					} else {
 						setText(book.getName());
-						setEnabled(true);
 					}
 				}
 				return this;
 			}
 		});
 		populateBookDropdown();
-		memberFormPanel.add(bookDropdown);
-
+		formPanel.add(bookDropdown);
 		JButton addMemberButton = new JButton("Add Member");
+		addMemberButton.setName("addMemberButton");
 		addMemberButton.addActionListener(e -> addMember());
-		memberFormPanel.add(addMemberButton);
+		formPanel.add(addMemberButton);
 
-		panel.add(memberFormPanel, BorderLayout.NORTH);
+		panel.add(formPanel, BorderLayout.NORTH);
 
 		// Member Table
-		String[] memberColumns = { "ID", "Name", "Email", "Borrowed Books" };
-		memberTableModel = new DefaultTableModel(memberColumns, 0);
+		memberTableModel = new DefaultTableModel(new String[] { "ID", "Name", "Email", "Borrowed Books" }, 0);
 		memberTable = new JTable(memberTableModel);
-		memberTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		memberTable.setName("memberTable");
+		memberTableSelectionListener = e -> {
+			if (!e.getValueIsAdjusting()) {
+				int row = memberTable.getSelectedRow();
+				if (row != -1) {
+					memberIdField.setText(memberTableModel.getValueAt(row, 0).toString());
+					memberNameField.setText(memberTableModel.getValueAt(row, 1).toString());
+					memberEmailField.setText(memberTableModel.getValueAt(row, 2).toString());
+				} else {
+					clearMemberFields();
+				}
+			}
+		};
 
-		JScrollPane memberScrollPane = new JScrollPane(memberTable);
-		panel.add(memberScrollPane, BorderLayout.CENTER);
+		memberTable.getSelectionModel().addListSelectionListener(memberTableSelectionListener);
 
-		// Member Buttons
-		JPanel memberButtonPanel = new JPanel();
+		panel.add(new JScrollPane(memberTable), BorderLayout.CENTER);
+
+		// Button panel
+		JPanel buttonPanel = new JPanel();
 
 		JButton deleteMemberButton = new JButton("Delete Member");
+		deleteMemberButton.setName("deleteMemberButton");
 		deleteMemberButton.addActionListener(e -> deleteMember());
-		memberButtonPanel.add(deleteMemberButton);
+		buttonPanel.add(deleteMemberButton);
 
 		JButton showAllMembersButton = new JButton("Show All Members");
+		showAllMembersButton.setName("showAllMembersButton");
 		showAllMembersButton.addActionListener(e -> showAllMembers());
-		memberButtonPanel.add(showAllMembersButton);
+		buttonPanel.add(showAllMembersButton);
 
 		JButton searchMemberButton = new JButton("Search Member");
+		searchMemberButton.setName("searchMemberButton");
 		searchMemberButton.addActionListener(e -> searchMember());
-		memberButtonPanel.add(searchMemberButton);
+		buttonPanel.add(searchMemberButton);
 
-		panel.add(memberButtonPanel, BorderLayout.SOUTH);
-
-		panel.add(memberButtonPanel, BorderLayout.SOUTH);
+		panel.add(buttonPanel, BorderLayout.SOUTH);
 
 		return panel;
 	}
@@ -257,20 +322,88 @@ public class CombinedSwingView extends JFrame implements BookView {
 				}
 			}
 		}
-
 		bookDropdown.setSelectedIndex(0);
 	}
 
 	private void addBook() {
-		int id = Integer.parseInt(bookIdField.getText());
-		String serialNumber = bookSerialNumberField.getText();
-		String name = bookNameField.getText();
-		String author = bookAuthorField.getText();
-		String genre = bookGenreField.getText();
+		try {
+			int id = Integer.parseInt(bookIdField.getText());
+			String serialNumber = bookSerialNumberField.getText();
+			String name = bookNameField.getText();
+			String author = bookAuthorField.getText();
+			String genre = bookGenreField.getText();
 
-		Book book = new Book(id, serialNumber, name, author, genre, new ArrayList<>());
-		bookController.newBook(book);
-		clearBookFields();
+			if (id <= 0) {
+				bookStatusLabel.setText("ID must be positive");
+				bookStatusLabel.setForeground(Color.RED);
+				return;
+			}
+
+			if (serialNumber.isEmpty() || name.isEmpty() || author.isEmpty() || genre.isEmpty()) {
+				bookStatusLabel.setText("All fields must be filled");
+				bookStatusLabel.setForeground(Color.RED);
+				return;
+			}
+
+			Book book = new Book(id, serialNumber, name, author, genre, new ArrayList<>());
+			bookController.newBook(book);
+			bookStatusLabel.setText("Book added successfully");
+			bookStatusLabel.setForeground(Color.GREEN);
+			clearBookFields();
+			refreshBookDropdown();
+
+		} catch (NumberFormatException e) {
+			bookStatusLabel.setText("ID must be a number");
+			bookStatusLabel.setForeground(Color.RED);
+		}
+	}
+
+	private void updateBook() {
+		int selectedRow = bookTable.getSelectedRow();
+		if (selectedRow < 0) {
+			bookStatusLabel.setText("No book selected");
+			bookStatusLabel.setForeground(Color.RED);
+			return;
+		}
+
+		try {
+			int id = Integer.parseInt(bookIdField.getText());
+			String serialNumber = bookSerialNumberField.getText();
+			String name = bookNameField.getText();
+			String author = bookAuthorField.getText();
+			String genre = bookGenreField.getText();
+
+			if (serialNumber.isEmpty() || name.isEmpty() || author.isEmpty() || genre.isEmpty()) {
+				bookStatusLabel.setText("All fields must be filled");
+				bookStatusLabel.setForeground(Color.RED);
+				return;
+			}
+
+			Book book = new Book(id, serialNumber, name, author, genre, null);
+			bookController.updateBook(book);
+			bookStatusLabel.setText("Book updated successfully");
+			bookStatusLabel.setForeground(Color.GREEN);
+			clearBookFields();
+
+		} catch (NumberFormatException e) {
+			bookStatusLabel.setText("ID must be a number");
+			bookStatusLabel.setForeground(Color.RED);
+		}
+	}
+
+	private void deleteBook() {
+		int selectedRow = bookTable.getSelectedRow();
+		if (selectedRow < 0) {
+			bookStatusLabel.setText("No book selected");
+			bookStatusLabel.setForeground(Color.RED);
+			return;
+		}
+
+		String serialNumber = bookTableModel.getValueAt(selectedRow, 1).toString();
+		Book book = new Book(0, serialNumber, null, null, null, null);
+		bookController.deleteBook(book);
+		bookStatusLabel.setText("Book deleted successfully");
+		bookStatusLabel.setForeground(Color.GREEN);
 	}
 
 	private void showAllBooks() {
@@ -280,64 +413,67 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 	private void searchBook() {
 		String serialNumber = JOptionPane.showInputDialog("Enter Book Serial Number to search:");
-		if (serialNumber != null) {
-			bookController.searchBook(serialNumber);
+		if (serialNumber == null || serialNumber.trim().isEmpty()) {
+			bookStatusLabel.setText("Please enter a serial number");
+			bookStatusLabel.setForeground(Color.RED);
+			return;
 		}
-	}
-
-	private void deleteBook() {
-		int selectedRow = bookTable.getSelectedRow();
-		if (selectedRow >= 0) {
-			String serialNumber = bookTableModel.getValueAt(selectedRow, 1).toString();
-			Book book = new Book(0, serialNumber, null, null, null, null);
-			bookController.deleteBook(book);
-		}
-	}
-
-	private void updateBook() {
-		int selectedRow = bookTable.getSelectedRow();
-		if (selectedRow >= 0) {
-			int id = Integer.parseInt(bookIdField.getText());
-			String serialNumber = bookSerialNumberField.getText();
-			String name = bookNameField.getText();
-			String author = bookAuthorField.getText();
-			String genre = bookGenreField.getText();
-			if (!serialNumber.isEmpty() && !name.isEmpty() && !author.isEmpty() && !genre.isEmpty()) {
-				Book book = new Book(id, serialNumber, name, author, genre, null);
-				bookController.updateBook(book);
-				clearBookFields();
-			} else {
-				showError("All fields must be filled", (Book) null);
-			}
-		}
-	}
-
-	private void clearBookFields() {
-		bookIdField.setText("");
-		bookSerialNumberField.setText("");
-		bookNameField.setText("");
-		bookAuthorField.setText("");
-		bookGenreField.setText("");
+		bookController.searchBook(serialNumber);
 	}
 
 	private void addMember() {
-		int id = Integer.parseInt(memberIdField.getText());
-		String name = memberNameField.getText();
-		String email = memberEmailField.getText();
-		Book selectedBook = (Book) bookDropdown.getSelectedItem();
+		try {
+			int id = Integer.parseInt(memberIdField.getText());
+			String name = memberNameField.getText();
+			String email = memberEmailField.getText();
+			Book selectedBook = (Book) bookDropdown.getSelectedItem();
 
-		Member member = new Member(id, name, email, null);
-		memberController.newMember(member);
+			if (id <= 0) {
+				memberStatusLabel.setText("ID must be positive");
+				memberStatusLabel.setForeground(Color.RED);
+				return;
+			}
 
-		Member savedMember = memberController.allMembers().stream().filter(m -> m.getId() == id).findFirst()
-				.orElse(null);
+			if (name.isEmpty() || email.isEmpty()) {
+				memberStatusLabel.setText("All fields must be filled");
+				memberStatusLabel.setForeground(Color.RED);
+				return;
+			}
 
-		if (selectedBook != null && savedMember != null) {
-			memberController.borrowBook(savedMember, selectedBook);
+			Member member = new Member(id, name, email, null);
+			memberController.newMember(member);
+
+			Member savedMember = memberController.allMembers().stream().filter(m -> m.getId() == id).findFirst()
+					.orElse(null);
+
+			if (savedMember != null) {
+				memberController.borrowBook(savedMember, selectedBook);
+			}
+
+			memberStatusLabel.setText("Member added successfully");
+			memberStatusLabel.setForeground(Color.GREEN);
+			clearMemberFields();
+			refreshBookDropdown();
+
+		} catch (NumberFormatException e) {
+			memberStatusLabel.setText("ID must be a number");
+			memberStatusLabel.setForeground(Color.RED);
+		}
+	}
+
+	private void deleteMember() {
+		int selectedRow = memberTable.getSelectedRow();
+		if (selectedRow < 0) {
+			memberStatusLabel.setText("No member selected");
+			memberStatusLabel.setForeground(Color.RED);
+			return;
 		}
 
-		clearMemberFields();
-		refreshBookDropdown();
+		int id = Integer.parseInt(memberTableModel.getValueAt(selectedRow, 0).toString());
+		Member member = new Member(id, null, null, null);
+		memberController.deleteMember(member);
+		memberStatusLabel.setText("Member deleted successfully");
+		memberStatusLabel.setForeground(Color.GREEN);
 	}
 
 	private void showAllMembers() {
@@ -347,23 +483,27 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 	private void searchMember() {
 		String idStr = JOptionPane.showInputDialog("Enter Member ID to search:");
-		if (idStr != null) {
-			try {
-				int id = Integer.parseInt(idStr);
-				memberController.searchMember(id);
-			} catch (NumberFormatException ex) {
-				JOptionPane.showMessageDialog(this, "Invalid ID format", ERROR, JOptionPane.ERROR_MESSAGE);
-			}
+		if (idStr == null || idStr.trim().isEmpty()) {
+			memberStatusLabel.setText("Please enter an ID");
+			memberStatusLabel.setForeground(Color.RED);
+			return;
+		}
+
+		try {
+			int id = Integer.parseInt(idStr);
+			memberController.searchMember(id);
+		} catch (NumberFormatException e) {
+			memberStatusLabel.setText("ID must be a number");
+			memberStatusLabel.setForeground(Color.RED);
 		}
 	}
 
-	private void deleteMember() {
-		int selectedRow = memberTable.getSelectedRow();
-		if (selectedRow >= 0) {
-			int id = Integer.parseInt(memberTableModel.getValueAt(selectedRow, 0).toString());
-			Member member = new Member(id, null, null, null);
-			memberController.deleteMember(member);
-		}
+	private void clearBookFields() {
+		bookIdField.setText("");
+		bookSerialNumberField.setText("");
+		bookNameField.setText("");
+		bookAuthorField.setText("");
+		bookGenreField.setText("");
 	}
 
 	private void clearMemberFields() {
@@ -382,79 +522,6 @@ public class CombinedSwingView extends JFrame implements BookView {
 	}
 
 	@Override
-	public void bookAdded(Book book) {
-		showAllBooks();
-	}
-
-	@Override
-	public void bookRemoved(Book book) {
-		showAllBooks();
-	}
-
-	@Override
-	public void showErrorBookNotFound(String message) {
-		JOptionPane.showMessageDialog(this, message, ERROR, JOptionPane.ERROR_MESSAGE);
-	}
-
-	@Override
-	public void showSearchedBooks(Book book) {
-		bookTableModel.setRowCount(0);
-		bookTableModel.addRow(new Object[] { book.getId(), book.getSerialNumber(), book.getName(), book.getAuthorName(),
-				book.getGenre() });
-	}
-
-	@Override
-	public void showError(String message, Book book) {
-		JOptionPane.showMessageDialog(this, message, ERROR, JOptionPane.ERROR_MESSAGE);
-	}
-
-	@Override
-	public void showErrorBookNotFound(String message, Book book) {
-		JOptionPane.showMessageDialog(this, message, ERROR, JOptionPane.ERROR_MESSAGE);
-	}
-
-	@Override
-	public void memberAdded(Member member) {
-		showAllMembers();
-	}
-
-	@Override
-	public void memberRemoved(Member member) {
-		showAllMembers();
-	}
-
-	@Override
-	public void showSearchedMembers(Member member) {
-		memberTableModel.setRowCount(0);
-		memberTableModel.addRow(new Object[] { member.getId(), member.getName(), member.getEmail() });
-	}
-
-	@Override
-	public void showError(String message, Member member) {
-		JOptionPane.showMessageDialog(this, message, ERROR, JOptionPane.ERROR_MESSAGE);
-	}
-
-	@Override
-	public void refreshBookDropdown() {
-		populateBookDropdown();
-	}
-
-	@Override
-	public void showErrorMemberNotFound(String message, Member member) {
-		JOptionPane.showMessageDialog(this, message, ERROR, JOptionPane.ERROR_MESSAGE);
-	}
-
-	@Override
-	public void showErrorMemberNotFound(String message) {
-		JOptionPane.showMessageDialog(this, message, ERROR, JOptionPane.ERROR_MESSAGE);
-	}
-
-	@Override
-	public void showMessage(String message) {
-		JOptionPane.showMessageDialog(this, message, "Success", JOptionPane.INFORMATION_MESSAGE);
-	}
-
-	@Override
 	public void showAllMembers(List<Member> members) {
 		memberTableModel.setRowCount(0);
 		for (Member member : members) {
@@ -466,5 +533,105 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 			memberTableModel.addRow(new Object[] { member.getId(), member.getName(), member.getEmail(), borrowedBook });
 		}
+	}
+
+	@Override
+	public void showSearchedBooks(Book book) {
+		bookTableModel.setRowCount(0);
+		if (book != null) {
+			bookTableModel.addRow(new Object[] { book.getId(), book.getSerialNumber(), book.getName(),
+					book.getAuthorName(), book.getGenre() });
+		}
+	}
+
+	@Override
+	public void showSearchedMembers(Member member) {
+		memberTableModel.setRowCount(0);
+		if (member != null) {
+			String borrowedBook = "None";
+			if (member.getBook() != null) {
+				Book currentBook = bookController.findById(member.getBook().getId());
+				borrowedBook = currentBook != null ? currentBook.getName() : "Unknown";
+			}
+
+			memberTableModel.addRow(new Object[] { member.getId(), member.getName(), member.getEmail(), borrowedBook });
+		}
+	}
+
+	@Override
+	public void bookAdded(Book book) {
+		showAllBooks();
+		bookStatusLabel.setText("Book added successfully");
+		bookStatusLabel.setForeground(Color.GREEN);
+	}
+
+	@Override
+	public void bookRemoved(Book book) {
+		showAllBooks();
+		bookStatusLabel.setText("Book removed successfully");
+		bookStatusLabel.setForeground(Color.GREEN);
+	}
+
+	@Override
+	public void memberAdded(Member member) {
+		showAllMembers();
+		memberStatusLabel.setText("Member added successfully");
+		memberStatusLabel.setForeground(Color.GREEN);
+	}
+
+	@Override
+	public void memberRemoved(Member member) {
+		showAllMembers();
+		memberStatusLabel.setText("Member removed successfully");
+		memberStatusLabel.setForeground(Color.GREEN);
+	}
+
+	@Override
+	public void showErrorBookNotFound(String message) {
+		bookStatusLabel.setText(message);
+		bookStatusLabel.setForeground(Color.RED);
+	}
+
+	@Override
+	public void showErrorBookNotFound(String message, Book book) {
+		bookStatusLabel.setText(message);
+		bookStatusLabel.setForeground(Color.RED);
+	}
+
+	@Override
+	public void showBookError(String message, Book book) {
+		bookStatusLabel.setText(message);
+		bookStatusLabel.setForeground(Color.RED);
+	}
+
+	@Override
+	public void showErrorMemberNotFound(String message) {
+		memberStatusLabel.setText(message);
+		memberStatusLabel.setForeground(Color.RED);
+	}
+
+	@Override
+	public void showErrorMemberNotFound(String message, Member member) {
+		memberStatusLabel.setText(message);
+		memberStatusLabel.setForeground(Color.RED);
+	}
+
+	@Override
+	public void showMemberError(String message, Member member) {
+		memberStatusLabel.setText(message);
+		memberStatusLabel.setForeground(Color.RED);
+	}
+
+	@Override
+	public void showMessage(String message) {
+		bookStatusLabel.setText(message);
+		bookStatusLabel.setForeground(Color.GREEN);
+		memberStatusLabel.setText(message);
+		memberStatusLabel.setForeground(Color.GREEN);
+	}
+
+	@Override
+	public void refreshBookDropdown() {
+		populateBookDropdown();
 	}
 }

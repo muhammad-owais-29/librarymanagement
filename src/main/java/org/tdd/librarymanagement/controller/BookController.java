@@ -18,19 +18,19 @@ public class BookController {
 
 	public void newBook(Book book) {
 		if (book.getId() <= 0) {
-			bookView.showError("ID must be a positive number", book);
+			bookView.showBookError("ID must be a positive number", book);
 			return;
 		}
 
 		Book existingBook = bookRepository.findBySerialNumber(book.getSerialNumber());
 		if (existingBook != null) {
-			bookView.showError("Already existing book with serial number " + book.getSerialNumber(), existingBook);
+			bookView.showBookError("Already existing book with serial number " + book.getSerialNumber(), existingBook);
 			return;
 		}
 
 		Book existingBookById = bookRepository.findById(book.getId());
 		if (existingBookById != null) {
-			bookView.showError("ID Already exists " + book.getId(), existingBookById);
+			bookView.showBookError("ID Already exists " + book.getId(), existingBookById);
 			return;
 		}
 
@@ -80,7 +80,7 @@ public class BookController {
 		if (!existingBook.getSerialNumber().equals(book.getSerialNumber())) {
 			Book bookWithSameSerial = bookRepository.findBySerialNumber(book.getSerialNumber());
 			if (bookWithSameSerial != null) {
-				bookView.showError("Serial number already exists", book);
+				bookView.showBookError("Serial number already exists", book);
 				return;
 			}
 		}

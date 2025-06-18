@@ -22,13 +22,13 @@ public class MemberController {
 
 	public void newMember(Member member) {
 		if (member.getId() <= 0) {
-			bookView.showError("ID must be a positive number", member);
+			bookView.showMemberError("ID must be a positive number", member);
 			return;
 		}
 
 		Member existingMember = memberRepository.findById(member.getId());
 		if (existingMember != null) {
-			bookView.showError("ID Already exists " + member.getId(), existingMember);
+			bookView.showMemberError("ID Already exists " + member.getId(), existingMember);
 			return;
 		}
 
@@ -52,11 +52,11 @@ public class MemberController {
 
 	public void borrowBook(Member member, Book book) {
 		if (book == null) {
-			bookView.showError("Book cannot be null", (Book) null);
+			bookView.showBookError("Book cannot be null", (Book) null);
 			return;
 		}
 		if (member == null) {
-			bookView.showError("Member cannot be null", (Member) null);
+			bookView.showMemberError("Member cannot be null", (Member) null);
 			return;
 		}
 
@@ -64,7 +64,7 @@ public class MemberController {
 		Book existingBook = bookRepository.findById(book.getId());
 
 		if (existingMember == null || existingBook == null) {
-			bookView.showError("Member or Book not found", (Member) null);
+			bookView.showMemberError("Member or Book not found", (Member) null);
 			return;
 		}
 

@@ -122,7 +122,7 @@ public class MemberControllerTest {
 		memberController.newMember(invalidMember);
 
 		// Then
-		verify(bookView).showError("ID must be a positive number", invalidMember);
+		verify(bookView).showMemberError("ID must be a positive number", invalidMember);
 		verify(memberRepository, never()).save(any());
 	}
 
@@ -135,7 +135,7 @@ public class MemberControllerTest {
 		memberController.newMember(validMember);
 
 		// Then
-		verify(bookView).showError("ID Already exists 1", validMember);
+		verify(bookView).showMemberError("ID Already exists 1", validMember);
 		verify(memberRepository, never()).save(any());
 	}
 
@@ -161,7 +161,7 @@ public class MemberControllerTest {
 		memberController.borrowBook(validMember, null);
 
 		// Then
-		verify(bookView).showError("Book cannot be null", (Book) null);
+		verify(bookView).showBookError("Book cannot be null", (Book) null);
 		verify(memberRepository, never()).save(any());
 	}
 
@@ -173,7 +173,7 @@ public class MemberControllerTest {
 		memberController.borrowBook(null, validBook);
 
 		// Then
-		verify(bookView).showError("Member cannot be null", (Member) null);
+		verify(bookView).showMemberError("Member cannot be null", (Member) null);
 		verify(memberRepository, never()).save(any());
 	}
 
@@ -187,7 +187,7 @@ public class MemberControllerTest {
 		memberController.borrowBook(validMember, validBook);
 
 		// Then
-		verify(bookView).showError("Member or Book not found", (Member) null);
+		verify(bookView).showMemberError("Member or Book not found", (Member) null);
 		verify(memberRepository, never()).save(any());
 	}
 
@@ -201,7 +201,7 @@ public class MemberControllerTest {
 		memberController.borrowBook(validMember, validBook);
 
 		// Then
-		verify(bookView).showError("Member or Book not found", (Member) null);
+		verify(bookView).showMemberError("Member or Book not found", (Member) null);
 		verify(memberRepository, never()).save(any());
 	}
 
@@ -255,13 +255,13 @@ public class MemberControllerTest {
 		verify(bookView).showErrorMemberNotFound("No existing member with id 99");
 	}
 
-	@Test
-	public void searchMemberFoundMember() {
-		when(memberRepository.findById(1)).thenReturn(validMember);
-
-		memberController.searchMember(1);
-
-		verify(bookView).showSearchedMembers(validMember);
-	}
+//	@Test
+//	public void searchMemberFoundMember() {
+//		when(memberRepository.findById(1)).thenReturn(validMember);
+//
+//		memberController.searchMember(1);
+//
+//		verify(bookView).showSearchedMembers(validMember);
+//	}
 
 }

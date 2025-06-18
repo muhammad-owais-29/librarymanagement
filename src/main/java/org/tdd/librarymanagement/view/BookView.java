@@ -15,7 +15,7 @@ public interface BookView {
 
 	public void showSearchedBooks(Book books);
 
-	public void showError(String message, Book book);
+	public void showBookError(String message, Book book);
 
 	public void bookRemoved(Book book);
 
@@ -23,7 +23,7 @@ public interface BookView {
 
 	public void memberAdded(Member member);
 
-	public void showError(String message, Member member);
+	public void showMemberError(String message, Member member);
 
 	public void showAllMembers(List<Member> members);
 
