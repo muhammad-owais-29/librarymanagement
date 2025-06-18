@@ -578,12 +578,16 @@ public class CombinedSwingViewTest extends AssertJSwingJUnitTestCase {
 
 	@Test
 	public void testShowBookError_SetErrorMessage() {
+
+		// given
+		Book book = new Book(1, "SN1", "Book1", "Author", "Genre", new ArrayList<>());
+
 		// when
-		GuiActionRunner.execute(() -> view.showBookError("Book processing failed", null));
+		GuiActionRunner.execute(() -> view.showBookError("Book processing failed", book));
 
 		// then
 		JLabelFixture bookStatusLabel = window.label("bookStatusLabel");
-		bookStatusLabel.requireText("Book processing failed");
+		bookStatusLabel.requireText("Book processing failed (Book ID: 1)");
 		assertThat(bookStatusLabel.foreground().target()).isEqualTo(Color.RED);
 	}
 
@@ -1048,7 +1052,7 @@ public class CombinedSwingViewTest extends AssertJSwingJUnitTestCase {
 
 		// then
 		JLabelFixture label = window.label("memberStatusLabel");
-		label.requireText("Error");
+		label.requireText("Error (Member ID: 1)");
 		assertThat(label.foreground().target()).isEqualTo(Color.RED);
 	}
 
