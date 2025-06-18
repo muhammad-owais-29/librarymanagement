@@ -255,13 +255,13 @@ public class MemberControllerTest {
 		verify(bookView).showErrorMemberNotFound("No existing member with id 99");
 	}
 
-//	@Test
-//	public void searchMemberFoundMember() {
-//		when(memberRepository.findById(1)).thenReturn(validMember);
-//
-//		memberController.searchMember(1);
-//
-//		verify(bookView).showSearchedMembers(validMember);
-//	}
+	@Test
+	public void searchMemberFoundMember() {
+		when(memberRepository.findById(1)).thenReturn(validMember);
+
+		memberController.searchMember(1);
+
+		verify(bookView).showSearchedMembers(validMember);
+	}
 
 }

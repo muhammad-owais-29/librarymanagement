@@ -71,7 +71,6 @@ public class MemberController {
 		existingMember.setBook(existingBook);
 
 		memberRepository.save(existingMember);
-		bookRepository.save(existingBook);
 
 		bookView.refreshBookDropdown();
 		bookView.showAllMembers(allMembers());

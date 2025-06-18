@@ -35,6 +35,11 @@ import org.tdd.librarymanagement.view.BookView;
 public class CombinedSwingView extends JFrame implements BookView {
 	private static final long serialVersionUID = 1L;
 
+	// Constants for error messages
+	private static final String ALL_FIELDS_REQUIRED = "All fields must be filled";
+	private static final String ID_MUST_BE_NUMBER = "ID must be a number";
+	private static final String SELECT_BOOK = "Please select a book";
+
 	private transient BookController bookController;
 	private transient MemberController memberController;
 
@@ -76,8 +81,8 @@ public class CombinedSwingView extends JFrame implements BookView {
 	}
 
 	// Add these fields:
-	private ListSelectionListener bookTableSelectionListener;
-	private ListSelectionListener memberTableSelectionListener;
+	private transient ListSelectionListener bookTableSelectionListener;
+	private transient ListSelectionListener memberTableSelectionListener;
 
 	public ListSelectionListener getBookTableSelectionListener() {
 		return bookTableSelectionListener;
@@ -246,7 +251,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 				if (value instanceof Book) {
 					Book book = (Book) value;
 					if (book.getId() == -1) {
-						setText("Please select a book");
+						setText(SELECT_BOOK);
 						setEnabled(false);
 					} else {
 						setText(book.getName());
@@ -312,7 +317,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 		DefaultComboBoxModel<Book> model = new DefaultComboBoxModel<>();
 		bookDropdown.setModel(model);
 
-		model.addElement(new Book(-1, "", "Please select a book", "", "", new ArrayList<>()));
+		model.addElement(new Book(-1, "", SELECT_BOOK, "", "", new ArrayList<>()));
 
 		if (bookController != null) {
 			List<Book> books = bookController.allBooks();
@@ -340,7 +345,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 			}
 
 			if (serialNumber.isEmpty() || name.isEmpty() || author.isEmpty() || genre.isEmpty()) {
-				bookStatusLabel.setText("All fields must be filled");
+				bookStatusLabel.setText(ALL_FIELDS_REQUIRED);
 				bookStatusLabel.setForeground(Color.RED);
 				return;
 			}
@@ -353,7 +358,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 			refreshBookDropdown();
 
 		} catch (NumberFormatException e) {
-			bookStatusLabel.setText("ID must be a number");
+			bookStatusLabel.setText(ID_MUST_BE_NUMBER);
 			bookStatusLabel.setForeground(Color.RED);
 		}
 	}
@@ -374,7 +379,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 			String genre = bookGenreField.getText();
 
 			if (serialNumber.isEmpty() || name.isEmpty() || author.isEmpty() || genre.isEmpty()) {
-				bookStatusLabel.setText("All fields must be filled");
+				bookStatusLabel.setText(ALL_FIELDS_REQUIRED);
 				bookStatusLabel.setForeground(Color.RED);
 				return;
 			}
@@ -386,7 +391,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 			clearBookFields();
 
 		} catch (NumberFormatException e) {
-			bookStatusLabel.setText("ID must be a number");
+			bookStatusLabel.setText(ID_MUST_BE_NUMBER);
 			bookStatusLabel.setForeground(Color.RED);
 		}
 	}
@@ -435,7 +440,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 			}
 
 			if (name.isEmpty() || email.isEmpty()) {
-				memberStatusLabel.setText("All fields must be filled");
+				memberStatusLabel.setText(ALL_FIELDS_REQUIRED);
 				memberStatusLabel.setForeground(Color.RED);
 				return;
 			}
@@ -456,7 +461,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 			refreshBookDropdown();
 
 		} catch (NumberFormatException e) {
-			memberStatusLabel.setText("ID must be a number");
+			memberStatusLabel.setText(ID_MUST_BE_NUMBER);
 			memberStatusLabel.setForeground(Color.RED);
 		}
 	}
@@ -493,7 +498,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 			int id = Integer.parseInt(idStr);
 			memberController.searchMember(id);
 		} catch (NumberFormatException e) {
-			memberStatusLabel.setText("ID must be a number");
+			memberStatusLabel.setText(ID_MUST_BE_NUMBER);
 			memberStatusLabel.setForeground(Color.RED);
 		}
 	}
@@ -600,7 +605,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 	@Override
 	public void showBookError(String message, Book book) {
-		bookStatusLabel.setText(message);
+		bookStatusLabel.setText(message + " (Book ID: " + book.getId() + ")");
 		bookStatusLabel.setForeground(Color.RED);
 	}
 
@@ -618,7 +623,7 @@ public class CombinedSwingView extends JFrame implements BookView {
 
 	@Override
 	public void showMemberError(String message, Member member) {
-		memberStatusLabel.setText(message);
+		memberStatusLabel.setText(message + " (Member ID: " + member.getId() + ")");
 		memberStatusLabel.setForeground(Color.RED);
 	}
 
