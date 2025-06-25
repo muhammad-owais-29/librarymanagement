@@ -17,7 +17,14 @@
     <maven.compiler.target>8</maven.compiler.target>
     <mockito.version>4.4.0</mockito.version>
     <junit.version>4.13</junit.version>
+    <pitest.version>1.6.4</pitest.version>
+    <docker-maven-plugin-version>0.34.1</docker-maven-plugin-version>
+    <maven-surefire-report-plugin-version>3.2.5</maven-surefire-report-plugin-version>
     <assertj-swing-junit-version>3.17.1</assertj-swing-junit-version>
+    <mongnodb-testContainer-version>1.18.1</mongnodb-testContainer-version>
+    <mongodb.driver.version>3.12.8</mongodb.driver.version>
+    <maven-codehaus-plugin-version>3.0.0</maven-codehaus-plugin-version>
+    <mongo-version>4.4</mongo-version>
     <!-- SonarQube Properties -->
     <sonar.organization>muhammad-owais-29</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -102,7 +109,7 @@
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongo-java-driver</artifactId>
-      <version>3.12.8</version>
+      <version>${mongodb.driver.version}</version>
     </dependency>
     
     <dependency>
@@ -116,6 +123,17 @@
       <artifactId>assertj-swing-junit</artifactId>
       <version>${assertj-swing-junit-version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mongodb</artifactId>
+        <version>${mongnodb-testContainer-version}</version>
+    </dependency>
+    <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.2.12</version>
+        <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -161,7 +179,26 @@
             </execution>
           </executions>
         </plugin>
-      </plugins>
+      
+      <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>${pitest.version}</version>
+        <configuration>
+            <targetClasses>
+                <param>org.tdd.librarymanagement.controller.*</param>
+                <param>org.tdd.librarymanagement.repository.mongo.*</param>
+            </targetClasses>
+            <targetTests>
+                <param>org.tdd.librarymanagement.controller.*</param>
+                <param>org.tdd.librarymanagement.repository.mongo.*</param>
+            </targetTests>
+            <mutators>
+                <mutator>STRONGER</mutator>
+            </mutators>
+        </configuration>
+      </plugin>
+     </plugins>
     </pluginManagement>
 
     <plugins>
@@ -180,6 +217,82 @@
         <artifactId>sonar-maven-plugin</artifactId>
         <version>${sonar-maven-plugin-version}</version>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>${maven-codehaus-plugin-version}</version>
+        <executions>
+            <execution>
+                <id>add-test-source</id>
+                <phase>generate-test-sources</phase>
+                <goals>
+                    <goal>add-test-source</goal>
+                </goals>
+                <configuration>
+                    <sources>
+                        <source>src/it/java</source>
+                    </sources>
+                </configuration>
+            </execution>                    
+        </executions>
+    </plugin>
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.22.1</version>
+        <configuration>
+            <systemPropertyVariables>
+                <mongo.port>${mongo.mapped.port}</mongo.port>
+            </systemPropertyVariables>
+        </configuration>
+        <executions>
+            <execution>
+                <id>default-it</id>
+                <goals>
+                    <goal>integration-test</goal>
+                    <goal>verify</goal>
+                </goals>
+                </execution>
+        </executions>
+    </plugin>
+    <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>${docker-maven-plugin-version}</version>
+        <configuration>
+            <images>
+                <image>
+                    <name>mongo:${mongo-version}</name>
+                <run>
+                  <ports>
+                    <port>mongo.mapped.port:27017</port> 
+                  </ports>
+                  <wait>
+                    <log>Waiting for connections</log>
+                    <time>10000</time>
+                  </wait>
+                </run>
+                </image>
+            </images>
+          </configuration>
+          <executions>
+            <execution>
+              <id>start-docker-mongo</id>
+              <phase>pre-integration-test</phase>
+              <goals>
+                <goal>start</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>stop-docker-mongo</id>
+              <phase>post-integration-test</phase>
+              <goals>
+                <goal>stop</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
     </plugins>
   </build>
 
@@ -218,6 +331,26 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    
+    <profile>
+        <id>mutation-testing</id>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.pitest</groupId>
+                    <artifactId>pitest-maven</artifactId>
+                    <executions>
+                        <execution>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>mutationCoverage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
     </profile>
   </profiles>
   

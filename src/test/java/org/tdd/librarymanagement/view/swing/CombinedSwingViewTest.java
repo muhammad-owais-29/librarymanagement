@@ -74,6 +74,7 @@ public class CombinedSwingViewTest extends AssertJSwingJUnitTestCase {
 	}
 
 	@After
+	@Override
 	public void onTearDown() {
 		window.cleanUp();
 	}
@@ -317,47 +318,30 @@ public class CombinedSwingViewTest extends AssertJSwingJUnitTestCase {
 	}
 
 	@Test
-	public void testUpdateBook_EmptySerialNumber_ShowsError() {
-		// given
-		Book book = new Book(1, "SN123", "Book", "Author", "Genre", null);
+	public void testUpdateBook_EmptyFields_ShowsError() {
+		Book book = new Book(1, "S1", "Book", "Author", "Genre", null);
 		GuiActionRunner.execute(() -> view.showAllBooks(Collections.singletonList(book)));
 		window.table("bookTable").selectRows(0);
+
+		// Case 1: Empty Serial Number
 		window.textBox("bookSerialNumberField").setText("");
-
-		// when
 		window.button("updateBookButton").click();
-
-		// then
 		window.label("bookStatusLabel").requireText("All fields must be filled");
-	}
 
-	@Test
-	public void testUpdateBook_EmptyAuthor_ShowsError() {
-		// given
-		Book book = new Book(1, "SN123", "Book", "Author", "Genre", null);
-		GuiActionRunner.execute(() -> view.showAllBooks(Collections.singletonList(book)));
-		window.table("bookTable").selectRows(0);
+		// Reset
+		window.textBox("bookSerialNumberField").setText("S1");
+
+		// Case 2: Empty Author
 		window.textBox("bookAuthorField").setText("");
-
-		// when
 		window.button("updateBookButton").click();
-
-		// then
 		window.label("bookStatusLabel").requireText("All fields must be filled");
-	}
 
-	@Test
-	public void testUpdateBook_EmptyGenre_ShowsError() {
-		// given
-		Book book = new Book(1, "SN123", "Book", "Author", "Genre", null);
-		GuiActionRunner.execute(() -> view.showAllBooks(Collections.singletonList(book)));
-		window.table("bookTable").selectRows(0);
+		// Reset
+		window.textBox("bookAuthorField").setText("Author");
+
+		// Case 3: Empty Genre
 		window.textBox("bookGenreField").setText("");
-
-		// when
 		window.button("updateBookButton").click();
-
-		// then
 		window.label("bookStatusLabel").requireText("All fields must be filled");
 	}
 

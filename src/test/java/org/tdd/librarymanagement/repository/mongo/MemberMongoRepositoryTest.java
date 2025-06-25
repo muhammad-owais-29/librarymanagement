@@ -2,8 +2,10 @@ package org.tdd.librarymanagement.repository.mongo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -175,6 +177,28 @@ public class MemberMongoRepositoryTest {
 		// Then
 		assertNotNull(result);
 		assertNull(result.getBook());
+	}
+
+	@Test
+	public void fromDocumentToMemberWithEmptyBorrowersList() {
+		// Given
+		Book repoBook = new Book(1, "123", "Book1", "Author1", "Genre1",
+				Arrays.asList(new Member(99, "Dummy", "dummy@gmail.com", null)));
+		Document doc = new Document().append("id", 1).append("name", "owais").append("email", "owais@gmail.com")
+				.append("bookId", 1);
+
+		when(memberCollection.find(Filters.eq("id", 1))).thenReturn(findIterable);
+		when(findIterable.first()).thenReturn(doc);
+		when(bookRepository.findById(1)).thenReturn(repoBook);
+
+		// When
+		Member member = memberRepository.findById(1);
+
+		// Then
+		assertNotNull(member.getBook());
+		assertEquals(1, member.getBook().getId());
+		assertTrue(member.getBook().getBorrowers().isEmpty());
+		assertNotSame(repoBook, member.getBook());
 	}
 
 	@Test

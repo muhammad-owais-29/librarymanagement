@@ -1,6 +1,7 @@
 package org.tdd.librarymanagement.controller;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -9,7 +10,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,7 +39,6 @@ public class MemberControllerTest {
 	private MemberController memberController;
 
 	private Member validMember;
-	private Member anotherMember;
 	private Book validBook;
 
 	@Before
@@ -49,24 +48,7 @@ public class MemberControllerTest {
 
 		validBook = new Book(1, "123", "Book1", "Author1", "Genre1", null);
 		validMember = new Member(1, "owais", "owais@gmail.com", validBook);
-		anotherMember = new Member(2, "test2", "test2@gmail.com", null);
 
-	}
-
-	@Test
-	public void allMembersShowAllMembersWithBooks() {
-		// Given
-		List<Member> members = Arrays.asList(validMember, anotherMember);
-		when(memberRepository.findAll()).thenReturn(members);
-		when(bookRepository.findById(1)).thenReturn(validBook);
-
-		// When
-		List<Member> result = memberController.allMembers();
-
-		// Then
-		assertEquals(2, result.size());
-		assertEquals("Book1", result.get(0).getBook().getName());
-		verify(bookView).showAllMembers(members);
 	}
 
 	@Test
@@ -110,6 +92,27 @@ public class MemberControllerTest {
 		// Then
 		assertEquals(1, result.size());
 		assertEquals(unknownBook, result.get(0).getBook());
+		verify(bookView).showAllMembers(anyList());
+	}
+
+	@Test
+	public void allMembersSetBookWhenBookExists() {
+		// Given:
+		Book oldBook = new Book(1, "123", "Book1", "Author1", "Genre1", null);
+		Member member = new Member(7, "Imran", "imran@gmail.com", oldBook);
+
+		// When
+		Book newBook = new Book(1, "123", "Book1", "Author1", "Genre1", null);
+		when(memberRepository.findAll()).thenReturn(Collections.singletonList(member));
+		when(bookRepository.findById(1)).thenReturn(newBook);
+
+		// When
+		List<Member> result = memberController.allMembers();
+
+		// Then
+		assertEquals(1, result.size());
+		// This
+		assertTrue(result.get(0).getBook() == newBook);
 		verify(bookView).showAllMembers(anyList());
 	}
 
