@@ -1,7 +1,7 @@
 package org.tdd.librarymanagement.controller;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -111,8 +111,7 @@ public class MemberControllerTest {
 
 		// Then
 		assertEquals(1, result.size());
-		// This
-		assertTrue(result.get(0).getBook() == newBook);
+		assertSame(newBook, result.get(0).getBook()); // <--- Use assertSame here
 		verify(bookView).showAllMembers(anyList());
 	}
 

@@ -32,13 +32,13 @@ public class BookControllerIT {
 
 	private static final String DB = "library";
 	private static final String BOOK_COLLECTION = "book";
-	private static final int mongoPort = Integer.parseInt(System.getProperty("mongo.port", "27017"));
+	private static final int MONGO_PORT = Integer.parseInt(System.getProperty("mongo.port", "27017"));
 
 	@Before
 	public void setUp() {
 		MockitoAnnotations.openMocks(this);
 		borrowers = new ArrayList<>();
-		mongoClient = new MongoClient(new ServerAddress("localhost", mongoPort));
+		mongoClient = new MongoClient(new ServerAddress("localhost", MONGO_PORT));
 		bookMongoRepository = new BookMongoRepository(mongoClient, DB, BOOK_COLLECTION);
 		bookController = new BookController(bookView, bookMongoRepository);
 

@@ -319,29 +319,39 @@ public class CombinedSwingViewTest extends AssertJSwingJUnitTestCase {
 
 	@Test
 	public void testUpdateBook_EmptyFields_ShowsError() {
+		// Given
 		Book book = new Book(1, "S1", "Book", "Author", "Genre", null);
 		GuiActionRunner.execute(() -> view.showAllBooks(Collections.singletonList(book)));
 		window.table("bookTable").selectRows(0);
 
 		// Case 1: Empty Serial Number
+		// When
 		window.textBox("bookSerialNumberField").setText("");
 		window.button("updateBookButton").click();
+
+		// Then
 		window.label("bookStatusLabel").requireText("All fields must be filled");
 
 		// Reset
 		window.textBox("bookSerialNumberField").setText("S1");
 
 		// Case 2: Empty Author
+		// When
 		window.textBox("bookAuthorField").setText("");
 		window.button("updateBookButton").click();
+
+		// Then
 		window.label("bookStatusLabel").requireText("All fields must be filled");
 
 		// Reset
 		window.textBox("bookAuthorField").setText("Author");
 
 		// Case 3: Empty Genre
+		// When
 		window.textBox("bookGenreField").setText("");
 		window.button("updateBookButton").click();
+
+		// Then
 		window.label("bookStatusLabel").requireText("All fields must be filled");
 	}
 
@@ -583,7 +593,7 @@ public class CombinedSwingViewTest extends AssertJSwingJUnitTestCase {
 		window.table("bookTable").selectRows(0);
 		window.textBox("bookIdField").requireText("10");
 
-		// when (isAdjusting = true)
+		// when
 		GuiActionRunner.execute(() -> {
 			ListSelectionListener listener = view.getBookTableSelectionListener();
 			ListSelectionEvent adjustingEvent = new ListSelectionEvent(view.getBookTable(), 0, 0, true);
@@ -593,7 +603,7 @@ public class CombinedSwingViewTest extends AssertJSwingJUnitTestCase {
 		// then
 		window.textBox("bookIdField").requireText("10");
 
-		// when (No row selected)
+		// when
 		GuiActionRunner.execute(() -> {
 			view.getBookTable().clearSelection();
 			ListSelectionListener listener = view.getBookTableSelectionListener();
