@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bson.Document;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +12,7 @@ import org.tdd.librarymanagement.entity.Book;
 
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
-import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 public class BookMongoRepositoryIT {
 
@@ -29,15 +28,20 @@ public class BookMongoRepositoryIT {
 		mongoClient = new MongoClient(new ServerAddress("localhost", MONGO_PORT));
 		bookRepository = new BookMongoRepository(mongoClient, DB, BOOK_COLLECTION);
 
-		MongoCollection<Document> collection = mongoClient.getDatabase(DB).getCollection(BOOK_COLLECTION);
-		collection.drop();
-
+		MongoDatabase db = mongoClient.getDatabase(DB);
+		if (db.listCollectionNames().into(new ArrayList<>()).contains(BOOK_COLLECTION)) {
+			db.getCollection(BOOK_COLLECTION).drop();
+		}
 	}
 
 	@After
 	public void tearDown() {
-		mongoClient.getDatabase(DB).getCollection(BOOK_COLLECTION).drop();
+		MongoDatabase db = mongoClient.getDatabase(DB);
+		if (db.listCollectionNames().into(new ArrayList<>()).contains(BOOK_COLLECTION)) {
+			db.getCollection(BOOK_COLLECTION).drop();
+		}
 		mongoClient.close();
+		mongoClient = null;
 	}
 
 	@Test
@@ -104,5 +108,4 @@ public class BookMongoRepositoryIT {
 		// Then
 		assertThat(bookRepository.findBySerialNumber("55")).isNull();
 	}
-
 }

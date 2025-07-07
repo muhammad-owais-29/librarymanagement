@@ -18,6 +18,7 @@ import org.tdd.librarymanagement.view.BookView;
 
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoDatabase;
 
 public class BookControllerIT {
 
@@ -30,7 +31,7 @@ public class BookControllerIT {
 	private Book validBook;
 	private Book anotherBook;
 
-	private static final String DB = "library";
+	private static final String DB = "testDB";
 	private static final String BOOK_COLLECTION = "book";
 	private static final int MONGO_PORT = Integer.parseInt(System.getProperty("mongo.port", "27017"));
 
@@ -42,14 +43,22 @@ public class BookControllerIT {
 		bookMongoRepository = new BookMongoRepository(mongoClient, DB, BOOK_COLLECTION);
 		bookController = new BookController(bookView, bookMongoRepository);
 
+		MongoDatabase db = mongoClient.getDatabase(DB);
+		if (db.listCollectionNames().into(new ArrayList<>()).contains(BOOK_COLLECTION)) {
+			db.getCollection(BOOK_COLLECTION).drop();
+		}
 		validBook = new Book(1, "123", "Book1", "Author1", "Genre1", borrowers);
 		anotherBook = new Book(2, "456", "Book2", "Author2", "Genre2", borrowers);
 	}
 
 	@After
 	public void tearDown() {
-		mongoClient.getDatabase(DB).drop();
+		MongoDatabase db = mongoClient.getDatabase(DB);
+		if (db.listCollectionNames().into(new ArrayList<>()).contains(BOOK_COLLECTION)) {
+			db.getCollection(BOOK_COLLECTION).drop();
+		}
 		mongoClient.close();
+		mongoClient = null;
 	}
 
 	@Test

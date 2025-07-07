@@ -13,6 +13,7 @@ import org.tdd.librarymanagement.entity.Member;
 
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoDatabase;
 
 public class MemberMongoRepositoryIT {
 
@@ -28,18 +29,28 @@ public class MemberMongoRepositoryIT {
 	@Before
 	public void setUp() {
 		mongoClient = new MongoClient(new ServerAddress("localhost", MONGO_PORT));
-		mongoClient.getDatabase(DB).getCollection(MEMBER_COLLECTION).drop();
-		mongoClient.getDatabase(DB).getCollection(BOOK_COLLECTION).drop();
-
+		MongoDatabase db = mongoClient.getDatabase(DB);
+		if (db.listCollectionNames().into(new ArrayList<>()).contains(MEMBER_COLLECTION)) {
+			db.getCollection(MEMBER_COLLECTION).drop();
+		}
+		if (db.listCollectionNames().into(new ArrayList<>()).contains(BOOK_COLLECTION)) {
+			db.getCollection(BOOK_COLLECTION).drop();
+		}
 		bookRepository = new BookMongoRepository(mongoClient, DB, BOOK_COLLECTION);
 		memberRepository = new MemberMongoRepository(mongoClient, DB, MEMBER_COLLECTION, bookRepository);
 	}
 
 	@After
 	public void tearDown() {
-		mongoClient.getDatabase(DB).getCollection(MEMBER_COLLECTION).drop();
-		mongoClient.getDatabase(DB).getCollection(BOOK_COLLECTION).drop();
+		MongoDatabase db = mongoClient.getDatabase(DB);
+		if (db.listCollectionNames().into(new ArrayList<>()).contains(BOOK_COLLECTION)) {
+			db.getCollection(BOOK_COLLECTION).drop();
+		}
+		if (db.listCollectionNames().into(new ArrayList<>()).contains(MEMBER_COLLECTION)) {
+			db.getCollection(MEMBER_COLLECTION).drop();
+		}
 		mongoClient.close();
+		mongoClient = null;
 	}
 
 	@Test

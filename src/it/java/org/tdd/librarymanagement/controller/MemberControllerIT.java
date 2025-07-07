@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
@@ -21,6 +22,7 @@ import org.tdd.librarymanagement.view.BookView;
 
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoDatabase;
 
 public class MemberControllerIT {
 
@@ -37,7 +39,7 @@ public class MemberControllerIT {
 	private Member validMember;
 	private Member anotherMember;
 
-	private static final String DB = "library";
+	private static final String DB = "testDB";
 	private static final String BOOK_COLLECTION = "book";
 	private static final String MEMBER_COLLECTION = "member";
 	private static final int MONGO_PORT = Integer.parseInt(System.getProperty("mongo.port", "27017"));
@@ -49,6 +51,11 @@ public class MemberControllerIT {
 		mongoClient = new MongoClient(new ServerAddress("localhost", MONGO_PORT));
 		bookMongoRepository = new BookMongoRepository(mongoClient, DB, BOOK_COLLECTION);
 		memberMongoRepository = new MemberMongoRepository(mongoClient, DB, MEMBER_COLLECTION, bookMongoRepository);
+
+		MongoDatabase db = mongoClient.getDatabase(DB);
+		if (db.listCollectionNames().into(new ArrayList<>()).contains(BOOK_COLLECTION)) {
+			db.getCollection(BOOK_COLLECTION).drop();
+		}
 
 		bookRepository = bookMongoRepository;
 		memberRepository = memberMongoRepository;
@@ -64,9 +71,15 @@ public class MemberControllerIT {
 
 	@After
 	public void tearDown() {
-		mongoClient.getDatabase(DB).getCollection(BOOK_COLLECTION).drop();
-		mongoClient.getDatabase(DB).getCollection(MEMBER_COLLECTION).drop();
+		MongoDatabase db = mongoClient.getDatabase(DB);
+		if (db.listCollectionNames().into(new ArrayList<>()).contains(BOOK_COLLECTION)) {
+			db.getCollection(BOOK_COLLECTION).drop();
+		}
+		if (db.listCollectionNames().into(new ArrayList<>()).contains(MEMBER_COLLECTION)) {
+			db.getCollection(MEMBER_COLLECTION).drop();
+		}
 		mongoClient.close();
+		mongoClient = null;
 	}
 
 	@Test
