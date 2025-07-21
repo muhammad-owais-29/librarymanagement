@@ -111,7 +111,7 @@ public class MemberControllerTest {
 
 		// Then
 		assertEquals(1, result.size());
-		assertSame(newBook, result.get(0).getBook()); // <--- Use assertSame here
+		assertSame(newBook, result.get(0).getBook());
 		verify(bookView).showAllMembers(anyList());
 	}
 

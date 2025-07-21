@@ -60,7 +60,8 @@ public class CombinedSwingViewIT extends AssertJSwingJUnitTestCase {
 		bookRepository = new BookMongoRepository(mongoClient, DB, BOOK_COLLECTION);
 		memberRepository = new MemberMongoRepository(mongoClient, DB, MEMBER_COLLECTION, bookRepository);
 
-		view = GuiActionRunner.execute(() -> new CombinedSwingView());
+		view = GuiActionRunner.execute(CombinedSwingView::new);
+
 		bookController = new BookController(view, bookRepository);
 		memberController = new MemberController(view, memberRepository, bookRepository);
 		view.setBookController(bookController);

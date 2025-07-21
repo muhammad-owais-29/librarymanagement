@@ -80,7 +80,6 @@ public class CombinedSwingView extends JFrame implements BookView {
 		return memberTable;
 	}
 
-	// Add these fields:
 	private transient ListSelectionListener bookTableSelectionListener;
 	private transient ListSelectionListener memberTableSelectionListener;
 
